@@ -1,1 +1,3 @@
-# Team-project-repo
+# Team ...
+
+Welcome to our repository! This project is part of our course assignment.
