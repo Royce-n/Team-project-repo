@@ -1,20 +1,23 @@
-# User Management Project — Project Description
+# User Management Project
 
-## Overview
-This project is a web-based user management system that uses Office365 (Microsoft Entra / Azure AD) for authentication. It supports role-based access control, user CRUD by administrators, user deactivation/reactivation, and audit logging.
+## Purpose
+This project manages user accounts and their access levels.  
+Admins can add, edit, deactivate, or reactivate users.  
+Regular users can sign in and view their profiles.
 
-## Tech stack
-- Backend: Django (or Flask) — choose one
-- Database: PostgreSQL
-- Authentication: Microsoft Entra (Office365) / Microsoft Graph (msal)
-- Hosting: Azure App Service
-- CI: GitHub Actions
+## Roles
+- **BasicUser** – default role for normal users  
+- **Admin** – can add, edit, or deactivate accounts  
+- **Manager** – can view and manage team information  
 
-## Features (planned/implemented)
-- Authentication with Office365
-- Admin CRUD for users (name, email, role, status)
-- Roles: basicuser (default), admin, manager
-- RBAC enforcement in backend
-- User deactivation / reactivation
-- UI: Admin dashboard + user list/detail/edit
-- Tests: unit tests + integration tests
+## Deactivation
+When an account is deactivated, the user cannot sign in until an admin reactivates it.
+
+## Team Members
+See contributors.md for full list.
+
+## Deliverables
+- Working user management system  
+- Role-based access control (RBAC)  
+- Deactivated users blocked from login  
+- Contributors screenshot
