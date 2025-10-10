@@ -15,8 +15,10 @@ export const useAuth = () => {
         instance.setActiveAccount(null);
       }
       localStorage.removeItem('msal.cache');
+      localStorage.removeItem('token');
       sessionStorage.clear();
       setUser(null);
+      delete api.defaults.headers.common['Authorization'];
     } catch (error) {
       console.error('Error clearing auth state:', error);
     }
@@ -27,6 +29,22 @@ export const useAuth = () => {
     const handleAuth = async () => {
       if (inProgress !== 'none') {
         return; // Wait for MSAL to finish
+      }
+
+      // Check if we have a stored token first
+      const storedToken = localStorage.getItem('token');
+      if (storedToken && !api.defaults.headers.common['Authorization']) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+        try {
+          const profileResponse = await api.get('/auth/profile');
+          setUser(profileResponse.data.user);
+          setLoading(false);
+          return;
+        } catch (error) {
+          console.log('Stored token invalid, clearing...');
+          localStorage.removeItem('token');
+          delete api.defaults.headers.common['Authorization'];
+        }
       }
 
       if (accounts.length > 0) {
@@ -45,6 +63,7 @@ export const useAuth = () => {
           // Set the JWT token from backend
           const jwtToken = backendResponse.data.token;
           api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
+          localStorage.setItem('token', jwtToken);
           
           // Now get user profile with JWT token
           try {
@@ -95,6 +114,7 @@ export const useAuth = () => {
           // Set the JWT token from backend
           const jwtToken = backendResponse.data.token;
           api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
+          localStorage.setItem('token', jwtToken);
           
           setUser(backendResponse.data.user);
           return backendResponse.data;
@@ -132,6 +152,7 @@ export const useAuth = () => {
       });
       setUser(null);
       delete api.defaults.headers.common['Authorization'];
+      localStorage.removeItem('token');
     } catch (error) {
       console.error('Logout error:', error);
     }
