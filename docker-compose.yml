@@ -51,6 +51,19 @@ services:
     networks:
       - app_network
 
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: user_management_nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - app_network
+
 volumes:
   postgres_data:
 
