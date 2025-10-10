@@ -37,10 +37,16 @@ export const useAuth = () => {
             account: account
           });
 
-          // Set the token in API service
-          api.defaults.headers.common['Authorization'] = `Bearer ${tokenResponse.accessToken}`;
+          // Authenticate with backend to get JWT token
+          const backendResponse = await api.post('/auth/office365', {
+            accessToken: tokenResponse.accessToken
+          });
+
+          // Set the JWT token from backend
+          const jwtToken = backendResponse.data.token;
+          api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
           
-          // Try to get user profile
+          // Now get user profile with JWT token
           try {
             const profileResponse = await api.get('/auth/profile');
             setUser(profileResponse.data.user);
