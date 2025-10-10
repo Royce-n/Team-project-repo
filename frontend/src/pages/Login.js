@@ -5,7 +5,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 const Login = () => {
-  const { login, loading } = useAuth();
+  const { login, loading, clearAuthState } = useAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const handleLogin = async () => {
@@ -87,8 +87,7 @@ const Login = () => {
             
             <button
               onClick={() => {
-                localStorage.clear();
-                sessionStorage.clear();
+                clearAuthState();
                 window.location.reload();
               }}
               className="w-full text-sm text-gray-500 hover:text-gray-700 underline"

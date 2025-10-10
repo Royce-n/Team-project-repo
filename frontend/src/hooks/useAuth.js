@@ -8,6 +8,21 @@ export const useAuth = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Function to clear MSAL state
+  const clearAuthState = () => {
+    try {
+      if (instance) {
+        instance.clearCache();
+        instance.setActiveAccount(null);
+      }
+      localStorage.removeItem('msal.cache');
+      sessionStorage.clear();
+      setUser(null);
+    } catch (error) {
+      console.error('Error clearing auth state:', error);
+    }
+  };
+
   const { data: userData, isLoading } = useQuery(
     'userProfile',
     () => api.get('/auth/profile').then(res => res.data),
@@ -61,6 +76,39 @@ export const useAuth = () => {
       // Wait for any pending interactions to complete
       await instance.handleRedirectPromise();
 
+      // Check if there's already an interaction in progress by trying to get accounts
+      const accounts = instance.getAllAccounts();
+      if (accounts.length > 0) {
+        // User is already logged in, try to get token silently
+        try {
+          const tokenResponse = await instance.acquireTokenSilent({
+            scopes: ['User.Read'],
+            account: accounts[0]
+          });
+
+          // Authenticate with backend
+          const backendResponse = await api.post('/auth/office365', {
+            accessToken: tokenResponse.accessToken
+          });
+
+          // Set the JWT token from backend
+          const jwtToken = backendResponse.data.token;
+          api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
+          
+          setUser(backendResponse.data.user);
+          return backendResponse.data;
+        } catch (error) {
+          console.log('Silent token acquisition failed, proceeding with popup login');
+        }
+      }
+
+      // Clear any stuck state before attempting login
+      clearAuthState();
+      
+      // Add a small delay to ensure any previous interactions are cleared
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Use loginPopup with proper error handling
       const loginResponse = await instance.loginPopup({
         scopes: ['User.Read'],
         prompt: 'select_account'
@@ -107,6 +155,7 @@ export const useAuth = () => {
     loading: loading || isLoading,
     login,
     logout,
+    clearAuthState,
     isAuthenticated: !!user
   };
 };
