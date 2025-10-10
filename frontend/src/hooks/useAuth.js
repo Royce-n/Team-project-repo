@@ -7,23 +7,68 @@ export const useAuth = () => {
   const { instance, accounts } = useMsal();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
-  const { data: userData, isLoading } = useQuery(
-    'userProfile',
-    () => api.get('/auth/profile').then(res => res.data),
-    {
-      enabled: !!accounts[0],
-      retry: false,
-      onError: () => {
-        setUser(null);
-        setLoading(false);
+  // Function to clear MSAL state
+  const clearAuthState = () => {
+    try {
+      if (instance) {
+        instance.clearCache();
+        instance.setActiveAccount(null);
       }
+      localStorage.removeItem('msal.cache');
+      sessionStorage.clear();
+      setUser(null);
+      setInitialized(false);
+    } catch (error) {
+      console.error('Error clearing auth state:', error);
     }
-  );
+  };
 
+  // Only run once when component mounts
   useEffect(() => {
     const initializeAuth = async () => {
+      if (initialized || !instance) return;
+      
       try {
+        // Wait for MSAL to be ready
+        let attempts = 0;
+        while (attempts < 10 && (!instance.getActiveAccount && !instance.getAllAccounts)) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+        }
+
+        if (attempts >= 10) {
+          console.log('MSAL not ready after 10 attempts');
+          setLoading(false);
+          return;
+        }
+
+        // Handle redirect response first
+        const redirectResponse = await instance.handleRedirectPromise();
+        
+        if (redirectResponse) {
+          // User just completed login via redirect
+          const tokenResponse = await instance.acquireTokenSilent({
+            scopes: ['User.Read'],
+            account: redirectResponse.account
+          });
+
+          // Authenticate with backend
+          const backendResponse = await api.post('/auth/office365', {
+            accessToken: tokenResponse.accessToken
+          });
+
+          // Set the JWT token from backend
+          const jwtToken = backendResponse.data.token;
+          api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
+          
+          setUser(backendResponse.data.user);
+          setInitialized(true);
+          return;
+        }
+
+        // Check for existing accounts
         if (accounts.length > 0) {
           const account = accounts[0];
           const tokenResponse = await instance.acquireTokenSilent({
@@ -34,8 +79,12 @@ export const useAuth = () => {
           // Set the token in API service
           api.defaults.headers.common['Authorization'] = `Bearer ${tokenResponse.accessToken}`;
           
-          if (userData) {
-            setUser(userData.user);
+          // Try to get user profile
+          try {
+            const profileResponse = await api.get('/auth/profile');
+            setUser(profileResponse.data.user);
+          } catch (error) {
+            console.log('Profile fetch failed, user not authenticated');
           }
         }
       } catch (error) {
@@ -43,11 +92,12 @@ export const useAuth = () => {
         setUser(null);
       } finally {
         setLoading(false);
+        setInitialized(true);
       }
     };
 
     initializeAuth();
-  }, [accounts, instance, userData]);
+  }, []); // Empty dependency array - only run once
 
   const login = async () => {
     try {
@@ -58,27 +108,46 @@ export const useAuth = () => {
         throw new Error('Authentication not available. Please ensure you are using HTTPS or localhost.');
       }
 
-      const loginResponse = await instance.loginPopup({
+      // Check if there's already an interaction in progress by trying to get accounts
+      const accounts = instance.getAllAccounts();
+      if (accounts.length > 0) {
+        // User is already logged in, try to get token silently
+        try {
+          const tokenResponse = await instance.acquireTokenSilent({
+            scopes: ['User.Read'],
+            account: accounts[0]
+          });
+
+          // Authenticate with backend
+          const backendResponse = await api.post('/auth/office365', {
+            accessToken: tokenResponse.accessToken
+          });
+
+          // Set the JWT token from backend
+          const jwtToken = backendResponse.data.token;
+          api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
+          
+          setUser(backendResponse.data.user);
+          return backendResponse.data;
+        } catch (error) {
+          console.log('Silent token acquisition failed, proceeding with popup login');
+        }
+      }
+
+      // Clear any stuck state before attempting login
+      clearAuthState();
+      
+      // Wait a bit longer to ensure any previous interactions are cleared
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Use loginRedirect instead of loginPopup to avoid interaction conflicts
+      await instance.loginRedirect({
         scopes: ['User.Read'],
         prompt: 'select_account'
       });
 
-      const tokenResponse = await instance.acquireTokenSilent({
-        scopes: ['User.Read'],
-        account: loginResponse.account
-      });
-
-      // Authenticate with backend
-      const backendResponse = await api.post('/auth/office365', {
-        accessToken: tokenResponse.accessToken
-      });
-
-      // Set the JWT token from backend
-      const jwtToken = backendResponse.data.token;
-      api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
-      
-      setUser(backendResponse.data.user);
-      return backendResponse.data;
+      // Note: loginRedirect will redirect the page, so this code won't execute
+      // The authentication will be handled by the useEffect when the page loads
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -89,7 +158,7 @@ export const useAuth = () => {
 
   const logout = async () => {
     try {
-      await instance.logoutPopup({
+      await instance.logoutRedirect({
         postLogoutRedirectUri: window.location.origin
       });
       setUser(null);
@@ -101,9 +170,10 @@ export const useAuth = () => {
 
   return {
     user,
-    loading: loading || isLoading,
+    loading: loading || !initialized,
     login,
     logout,
+    clearAuthState,
     isAuthenticated: !!user
   };
 };
