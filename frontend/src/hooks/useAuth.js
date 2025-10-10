@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useMsal } from '@azure/msal-react';
-import { useQuery } from 'react-query';
 import { api } from '../services/api';
 
 export const useAuth = () => {
-  const { instance, accounts } = useMsal();
+  const { instance, accounts, inProgress } = useMsal();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
 
   // Function to clear MSAL state
   const clearAuthState = () => {
@@ -19,57 +17,20 @@ export const useAuth = () => {
       localStorage.removeItem('msal.cache');
       sessionStorage.clear();
       setUser(null);
-      setInitialized(false);
     } catch (error) {
       console.error('Error clearing auth state:', error);
     }
   };
 
-  // Only run once when component mounts
+  // Handle authentication when accounts change
   useEffect(() => {
-    const initializeAuth = async () => {
-      if (initialized || !instance) return;
-      
-      try {
-        // Wait for MSAL to be ready
-        let attempts = 0;
-        while (attempts < 10 && (!instance.getActiveAccount && !instance.getAllAccounts)) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          attempts++;
-        }
+    const handleAuth = async () => {
+      if (inProgress !== 'none') {
+        return; // Wait for MSAL to finish
+      }
 
-        if (attempts >= 10) {
-          console.log('MSAL not ready after 10 attempts');
-          setLoading(false);
-          return;
-        }
-
-        // Handle redirect response first
-        const redirectResponse = await instance.handleRedirectPromise();
-        
-        if (redirectResponse) {
-          // User just completed login via redirect
-          const tokenResponse = await instance.acquireTokenSilent({
-            scopes: ['User.Read'],
-            account: redirectResponse.account
-          });
-
-          // Authenticate with backend
-          const backendResponse = await api.post('/auth/office365', {
-            accessToken: tokenResponse.accessToken
-          });
-
-          // Set the JWT token from backend
-          const jwtToken = backendResponse.data.token;
-          api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
-          
-          setUser(backendResponse.data.user);
-          setInitialized(true);
-          return;
-        }
-
-        // Check for existing accounts
-        if (accounts.length > 0) {
+      if (accounts.length > 0) {
+        try {
           const account = accounts[0];
           const tokenResponse = await instance.acquireTokenSilent({
             scopes: ['User.Read'],
@@ -85,19 +46,21 @@ export const useAuth = () => {
             setUser(profileResponse.data.user);
           } catch (error) {
             console.log('Profile fetch failed, user not authenticated');
+            setUser(null);
           }
+        } catch (error) {
+          console.error('Token acquisition failed:', error);
+          setUser(null);
         }
-      } catch (error) {
-        console.error('Auth initialization error:', error);
+      } else {
         setUser(null);
-      } finally {
-        setLoading(false);
-        setInitialized(true);
       }
+      
+      setLoading(false);
     };
 
-    initializeAuth();
-  }, []); // Empty dependency array - only run once
+    handleAuth();
+  }, [accounts, inProgress, instance]);
 
   const login = async () => {
     try {
@@ -170,7 +133,7 @@ export const useAuth = () => {
 
   return {
     user,
-    loading: loading || !initialized,
+    loading: loading || inProgress !== 'none',
     login,
     logout,
     clearAuthState,
