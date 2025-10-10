@@ -65,6 +65,7 @@ if (!msalInstance) {
     getAllAccounts: () => [],
     addEventCallback: () => {},
     removeEventCallback: () => {},
+    initializeWrapperLibrary: () => Promise.resolve(),
     getLogger: () => ({
       error: () => {},
       warn: () => {},
