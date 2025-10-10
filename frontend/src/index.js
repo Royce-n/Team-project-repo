@@ -64,7 +64,12 @@ if (!msalInstance) {
     logoutPopup: () => Promise.reject(new Error('Authentication requires HTTPS or localhost')),
     getAllAccounts: () => [],
     addEventCallback: () => {},
-    removeEventCallback: () => {},
+    removeEventCallback: () => {},    getLogger: () => ({
+      error: () => {},
+      warn: () => {},
+      info: () => {},
+      verbose: () => {},
+    }),
   };
 }
 
