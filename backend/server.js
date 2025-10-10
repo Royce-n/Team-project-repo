@@ -23,14 +23,19 @@ app.use(helmet());
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    return req.ip || req.connection.remoteAddress || 'unknown';
+  }
 });
 app.use(limiter);
 
 // CORS configuration
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['http://143.110.148.157:3000', 'https://143.110.148.157:3000']
+    ? ['http://143.110.148.157:3000', 'https://143.110.148.157:3000', 'https://aurora.jguliz.com']
     : ['http://localhost:3000'],
   credentials: true
 }));
