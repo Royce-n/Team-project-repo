@@ -7,7 +7,7 @@ export const useAuth = () => {
   const { instance, accounts } = useMsal();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [initializing, setInitializing] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   // Function to clear MSAL state
   const clearAuthState = () => {
@@ -19,39 +19,28 @@ export const useAuth = () => {
       localStorage.removeItem('msal.cache');
       sessionStorage.clear();
       setUser(null);
+      setInitialized(false);
     } catch (error) {
       console.error('Error clearing auth state:', error);
     }
   };
 
-  const { data: userData, isLoading } = useQuery(
-    'userProfile',
-    () => api.get('/auth/profile').then(res => res.data),
-    {
-      enabled: !!accounts[0] && !loading && !initializing,
-      retry: false,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      onError: (error) => {
-        console.error('Profile fetch error:', error);
-        setUser(null);
-        setLoading(false);
-      }
-    }
-  );
-
+  // Only run once when component mounts
   useEffect(() => {
     const initializeAuth = async () => {
-      if (initializing || !instance) return;
+      if (initialized || !instance) return;
       
-      setInitializing(true);
       try {
-        // Check if MSAL is initialized
-        if (!instance.getActiveAccount && !instance.getAllAccounts) {
-          console.log('MSAL not ready yet, waiting...');
+        // Wait for MSAL to be ready
+        let attempts = 0;
+        while (attempts < 10 && (!instance.getActiveAccount && !instance.getAllAccounts)) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+        }
+
+        if (attempts >= 10) {
+          console.log('MSAL not ready after 10 attempts');
           setLoading(false);
-          setInitializing(false);
           return;
         }
 
@@ -75,6 +64,7 @@ export const useAuth = () => {
           api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
           
           setUser(backendResponse.data.user);
+          setInitialized(true);
           return;
         }
 
@@ -89,8 +79,12 @@ export const useAuth = () => {
           // Set the token in API service
           api.defaults.headers.common['Authorization'] = `Bearer ${tokenResponse.accessToken}`;
           
-          if (userData) {
-            setUser(userData.user);
+          // Try to get user profile
+          try {
+            const profileResponse = await api.get('/auth/profile');
+            setUser(profileResponse.data.user);
+          } catch (error) {
+            console.log('Profile fetch failed, user not authenticated');
           }
         }
       } catch (error) {
@@ -98,17 +92,12 @@ export const useAuth = () => {
         setUser(null);
       } finally {
         setLoading(false);
-        setInitializing(false);
+        setInitialized(true);
       }
     };
 
-    // Add a small delay to ensure MSAL is ready
-    const timer = setTimeout(() => {
-      initializeAuth();
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [accounts, instance, userData, initializing]);
+    initializeAuth();
+  }, []); // Empty dependency array - only run once
 
   const login = async () => {
     try {
@@ -181,7 +170,7 @@ export const useAuth = () => {
 
   return {
     user,
-    loading: loading || isLoading || initializing,
+    loading: loading || !initialized,
     login,
     logout,
     clearAuthState,
