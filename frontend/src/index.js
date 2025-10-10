@@ -35,19 +35,36 @@ const msalConfig = {
   },
 };
 
+// Check if we're in a secure context (HTTPS or localhost)
+const isSecureContext = window.isSecureContext || 
+                       window.location.protocol === 'https:' || 
+                       window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1';
+
 // Initialize MSAL with error handling
 let msalInstance;
-try {
-  msalInstance = new PublicClientApplication(msalConfig);
-} catch (error) {
-  console.error('MSAL initialization error:', error);
-  // Create a mock instance for development
+if (isSecureContext) {
+  try {
+    msalInstance = new PublicClientApplication(msalConfig);
+  } catch (error) {
+    console.error('MSAL initialization error:', error);
+    msalInstance = null;
+  }
+} else {
+  console.warn('MSAL requires HTTPS or localhost. Authentication will be limited.');
+  msalInstance = null;
+}
+
+// Create a fallback instance for non-secure contexts
+if (!msalInstance) {
   msalInstance = {
     initialize: () => Promise.resolve(),
-    acquireTokenSilent: () => Promise.reject(new Error('MSAL not available')),
-    loginPopup: () => Promise.reject(new Error('MSAL not available')),
-    logoutPopup: () => Promise.reject(new Error('MSAL not available')),
+    acquireTokenSilent: () => Promise.reject(new Error('Authentication requires HTTPS or localhost')),
+    loginPopup: () => Promise.reject(new Error('Authentication requires HTTPS or localhost')),
+    logoutPopup: () => Promise.reject(new Error('Authentication requires HTTPS or localhost')),
     getAllAccounts: () => [],
+    addEventCallback: () => {},
+    removeEventCallback: () => {},
   };
 }
 
