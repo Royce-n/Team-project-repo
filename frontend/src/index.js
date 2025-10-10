@@ -14,14 +14,42 @@ const msalConfig = {
     clientId: process.env.REACT_APP_AZURE_CLIENT_ID,
     authority: `https://login.microsoftonline.com/common`,
     redirectUri: window.location.origin,
+    postLogoutRedirectUri: window.location.origin,
   },
   cache: {
-    cacheLocation: 'sessionStorage',
-    storeAuthStateInCookie: false,
+    cacheLocation: 'localStorage', // Use localStorage instead of sessionStorage
+    storeAuthStateInCookie: true, // Enable cookie storage for non-HTTPS
+  },
+  system: {
+    allowNativeBroker: false,
+    loggerOptions: {
+      loggerCallback: (level, message, containsPii) => {
+        if (containsPii) {
+          return;
+        }
+        console.log(message);
+      },
+      piiLoggingEnabled: false,
+      logLevel: 'Info',
+    },
   },
 };
 
-const msalInstance = new PublicClientApplication(msalConfig);
+// Initialize MSAL with error handling
+let msalInstance;
+try {
+  msalInstance = new PublicClientApplication(msalConfig);
+} catch (error) {
+  console.error('MSAL initialization error:', error);
+  // Create a mock instance for development
+  msalInstance = {
+    initialize: () => Promise.resolve(),
+    acquireTokenSilent: () => Promise.reject(new Error('MSAL not available')),
+    loginPopup: () => Promise.reject(new Error('MSAL not available')),
+    logoutPopup: () => Promise.reject(new Error('MSAL not available')),
+    getAllAccounts: () => [],
+  };
+}
 
 // React Query client
 const queryClient = new QueryClient({

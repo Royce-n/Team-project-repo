@@ -52,6 +52,12 @@ export const useAuth = () => {
   const login = async () => {
     try {
       setLoading(true);
+      
+      // Check if MSAL is available
+      if (!instance || !instance.loginPopup) {
+        throw new Error('Authentication not available. Please ensure you are using HTTPS or localhost.');
+      }
+
       const loginResponse = await instance.loginPopup({
         scopes: ['User.Read'],
         prompt: 'select_account'
