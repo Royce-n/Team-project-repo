@@ -58,6 +58,9 @@ services:
     container_name: user_management_nginx
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
     depends_on:
       - frontend
       - backend
