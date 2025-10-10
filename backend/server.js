@@ -35,7 +35,7 @@ app.use(limiter);
 // CORS configuration
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['http://143.110.148.157:3000', 'https://143.110.148.157:3000', 'https://aurora.jguliz.com']
+    ? ['http://143.110.148.157:3000', 'https://143.110.148.157:3000', 'https://aurora.jguliz.com', 'https://aurora.jguliz.com:3000']
     : ['http://localhost:3000'],
   credentials: true
 }));
