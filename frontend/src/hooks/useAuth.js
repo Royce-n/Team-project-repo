@@ -58,6 +58,9 @@ export const useAuth = () => {
         throw new Error('Authentication not available. Please ensure you are using HTTPS or localhost.');
       }
 
+      // Wait for any pending interactions to complete
+      await instance.handleRedirectPromise();
+
       const loginResponse = await instance.loginPopup({
         scopes: ['User.Read'],
         prompt: 'select_account'

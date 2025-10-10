@@ -11,8 +11,8 @@ import App from './App';
 // MSAL configuration
 const msalConfig = {
   auth: {
-    clientId: process.env.REACT_APP_AZURE_CLIENT_ID,
-    authority: `https://login.microsoftonline.com/common`,
+    clientId: process.env.REACT_APP_AZURE_CLIENT_ID || 'cad72c8c-cc16-4d72-9455-d710d9e8ca7e',
+    authority: `https://login.microsoftonline.com/organizations`,
     redirectUri: window.location.origin,
     postLogoutRedirectUri: window.location.origin,
   },
