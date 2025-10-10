@@ -43,10 +43,18 @@ export const useAuth = () => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      if (initializing) return;
+      if (initializing || !instance) return;
       
       setInitializing(true);
       try {
+        // Check if MSAL is initialized
+        if (!instance.getActiveAccount && !instance.getAllAccounts) {
+          console.log('MSAL not ready yet, waiting...');
+          setLoading(false);
+          setInitializing(false);
+          return;
+        }
+
         // Handle redirect response first
         const redirectResponse = await instance.handleRedirectPromise();
         
@@ -94,7 +102,12 @@ export const useAuth = () => {
       }
     };
 
-    initializeAuth();
+    // Add a small delay to ensure MSAL is ready
+    const timer = setTimeout(() => {
+      initializeAuth();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [accounts, instance, userData, initializing]);
 
   const login = async () => {
@@ -168,7 +181,7 @@ export const useAuth = () => {
 
   return {
     user,
-    loading: loading || isLoading,
+    loading: loading || isLoading || initializing,
     login,
     logout,
     clearAuthState,
