@@ -7,6 +7,7 @@ export const useAuth = () => {
   const { instance, accounts } = useMsal();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [initializing, setInitializing] = useState(false);
 
   // Function to clear MSAL state
   const clearAuthState = () => {
@@ -27,9 +28,13 @@ export const useAuth = () => {
     'userProfile',
     () => api.get('/auth/profile').then(res => res.data),
     {
-      enabled: !!accounts[0],
+      enabled: !!accounts[0] && !loading && !initializing,
       retry: false,
-      onError: () => {
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      onError: (error) => {
+        console.error('Profile fetch error:', error);
         setUser(null);
         setLoading(false);
       }
@@ -38,6 +43,9 @@ export const useAuth = () => {
 
   useEffect(() => {
     const initializeAuth = async () => {
+      if (initializing) return;
+      
+      setInitializing(true);
       try {
         // Handle redirect response first
         const redirectResponse = await instance.handleRedirectPromise();
@@ -82,11 +90,12 @@ export const useAuth = () => {
         setUser(null);
       } finally {
         setLoading(false);
+        setInitializing(false);
       }
     };
 
     initializeAuth();
-  }, [accounts, instance, userData]);
+  }, [accounts, instance, userData, initializing]);
 
   const login = async () => {
     try {
