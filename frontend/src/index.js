@@ -15,10 +15,11 @@ const msalConfig = {
     authority: `https://login.microsoftonline.com/organizations`,
     redirectUri: window.location.origin,
     postLogoutRedirectUri: window.location.origin,
+    navigateToLoginRequestUrl: false,
   },
   cache: {
-    cacheLocation: 'localStorage', // Use localStorage instead of sessionStorage
-    storeAuthStateInCookie: true, // Enable cookie storage for non-HTTPS
+    cacheLocation: 'localStorage',
+    storeAuthStateInCookie: false, // Disable cookie storage for SPA
   },
   system: {
     allowNativeBroker: false,

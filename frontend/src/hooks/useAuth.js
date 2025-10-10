@@ -39,6 +39,30 @@ export const useAuth = () => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        // Handle redirect response first
+        const redirectResponse = await instance.handleRedirectPromise();
+        
+        if (redirectResponse) {
+          // User just completed login via redirect
+          const tokenResponse = await instance.acquireTokenSilent({
+            scopes: ['User.Read'],
+            account: redirectResponse.account
+          });
+
+          // Authenticate with backend
+          const backendResponse = await api.post('/auth/office365', {
+            accessToken: tokenResponse.accessToken
+          });
+
+          // Set the JWT token from backend
+          const jwtToken = backendResponse.data.token;
+          api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
+          
+          setUser(backendResponse.data.user);
+          return;
+        }
+
+        // Check for existing accounts
         if (accounts.length > 0) {
           const account = accounts[0];
           const tokenResponse = await instance.acquireTokenSilent({
@@ -73,9 +97,6 @@ export const useAuth = () => {
         throw new Error('Authentication not available. Please ensure you are using HTTPS or localhost.');
       }
 
-      // Wait for any pending interactions to complete
-      await instance.handleRedirectPromise();
-
       // Check if there's already an interaction in progress by trying to get accounts
       const accounts = instance.getAllAccounts();
       if (accounts.length > 0) {
@@ -105,31 +126,17 @@ export const useAuth = () => {
       // Clear any stuck state before attempting login
       clearAuthState();
       
-      // Add a small delay to ensure any previous interactions are cleared
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait a bit longer to ensure any previous interactions are cleared
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Use loginPopup with proper error handling
-      const loginResponse = await instance.loginPopup({
+      // Use loginRedirect instead of loginPopup to avoid interaction conflicts
+      await instance.loginRedirect({
         scopes: ['User.Read'],
         prompt: 'select_account'
       });
 
-      const tokenResponse = await instance.acquireTokenSilent({
-        scopes: ['User.Read'],
-        account: loginResponse.account
-      });
-
-      // Authenticate with backend
-      const backendResponse = await api.post('/auth/office365', {
-        accessToken: tokenResponse.accessToken
-      });
-
-      // Set the JWT token from backend
-      const jwtToken = backendResponse.data.token;
-      api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
-      
-      setUser(backendResponse.data.user);
-      return backendResponse.data;
+      // Note: loginRedirect will redirect the page, so this code won't execute
+      // The authentication will be handled by the useEffect when the page loads
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -140,7 +147,7 @@ export const useAuth = () => {
 
   const logout = async () => {
     try {
-      await instance.logoutPopup({
+      await instance.logoutRedirect({
         postLogoutRedirectUri: window.location.origin
       });
       setUser(null);
