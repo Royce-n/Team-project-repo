@@ -29,10 +29,18 @@ export const useAuth = () => {
   useEffect(() => {
     let heartbeatInterval;
     let activityTimeout;
+    let lastActivityCall = 0;
     let sessionToken = sessionStorage.getItem('sessionToken');
 
     const handleUserActivity = async () => {
       if (sessionToken && !document.hidden) {
+        const now = Date.now();
+        // Throttle activity calls to max once per 5 seconds
+        if (now - lastActivityCall < 5000) {
+          return;
+        }
+        lastActivityCall = now;
+
         try {
           // Mark as active on any user interaction
           await api.post('/auth/sessions/active', { sessionToken });
@@ -47,11 +55,17 @@ export const useAuth = () => {
             try {
               await api.post('/auth/sessions/inactive', { sessionToken });
             } catch (error) {
-              console.log('Failed to mark session as inactive:', error);
+              // Silently fail for inactive marking to avoid console spam
+              console.debug('Failed to mark session as inactive:', error);
             }
           }, 30000); // 30 seconds
         } catch (error) {
-          console.log('Failed to mark session as active:', error);
+          // Only log network errors occasionally to avoid spam
+          if (error.code === 'ERR_NETWORK') {
+            console.debug('Network error marking session as active:', error);
+          } else {
+            console.log('Failed to mark session as active:', error);
+          }
         }
       }
     };

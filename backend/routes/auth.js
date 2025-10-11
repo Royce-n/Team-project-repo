@@ -225,8 +225,9 @@ router.get('/sessions/stats', authenticateToken, async (req, res) => {
           COUNT(s.id) as total_sessions,
           COUNT(CASE WHEN s.is_active = true AND s.expires_at > NOW() THEN 1 END) as active_sessions,
           MAX(s.last_activity) as last_activity,
+          BOOL_OR(s.is_active) as has_active_session,
           CASE 
-            WHEN MAX(s.last_activity) > NOW() - INTERVAL '30 seconds' AND MAX(s.is_active) = true THEN 'Online'
+            WHEN MAX(s.last_activity) > NOW() - INTERVAL '30 seconds' AND BOOL_OR(s.is_active) = true THEN 'Online'
             WHEN MAX(s.last_activity) > NOW() - INTERVAL '2 minutes' THEN 'Away'
             ELSE 'Offline'
           END as status_text
@@ -236,7 +237,7 @@ router.get('/sessions/stats', authenticateToken, async (req, res) => {
         GROUP BY u.id, u.name, u.email, u.role, u.status
         ORDER BY 
           CASE 
-            WHEN MAX(s.last_activity) > NOW() - INTERVAL '30 seconds' AND MAX(s.is_active) = true THEN 1
+            WHEN MAX(s.last_activity) > NOW() - INTERVAL '30 seconds' AND BOOL_OR(s.is_active) = true THEN 1
             WHEN MAX(s.last_activity) > NOW() - INTERVAL '2 minutes' THEN 2
             ELSE 3
           END,
