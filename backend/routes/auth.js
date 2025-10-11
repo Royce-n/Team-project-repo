@@ -202,37 +202,53 @@ router.get('/sessions/stats', authenticateToken, async (req, res) => {
       });
     }
 
-    // Get active sessions (not expired and is_active = true)
-    const activeSessionsResult = await query(
-      'SELECT COUNT(*) as count FROM user_sessions WHERE expires_at > NOW() AND is_active = true'
+    // Get active users (users with at least one active session)
+    const activeUsersResult = await query(`
+      SELECT COUNT(DISTINCT user_id) as count 
+      FROM user_sessions 
+      WHERE expires_at > NOW() AND is_active = true
+    `);
+
+    // Get total users
+    const totalUsersResult = await query(
+      'SELECT COUNT(*) as count FROM users WHERE status = \'active\''
     );
 
-    // Get total sessions (including expired)
-    const totalSessionsResult = await query(
-      'SELECT COUNT(*) as count FROM user_sessions'
-    );
-
-    // Get sessions by user
-    const sessionsByUserResult = await query(`
+    // Get user activity details
+    const usersActivityResult = await query(`
       SELECT 
         u.id, 
         u.name, 
-        u.email, 
+        u.email,
+        u.role,
+        u.status,
         COUNT(s.id) as total_sessions,
         COUNT(CASE WHEN s.is_active = true AND s.expires_at > NOW() THEN 1 END) as active_sessions,
-        MAX(s.last_activity) as last_activity
+        MAX(s.last_activity) as last_activity,
+        CASE 
+          WHEN MAX(s.last_activity) > NOW() - INTERVAL '2 minutes' THEN 'Online'
+          WHEN MAX(s.last_activity) > NOW() - INTERVAL '10 minutes' THEN 'Away'
+          ELSE 'Offline'
+        END as status_text
       FROM users u 
       LEFT JOIN user_sessions s ON u.id = s.user_id
-      GROUP BY u.id, u.name, u.email
-      ORDER BY active_sessions DESC, total_sessions DESC
+      WHERE u.status = 'active'
+      GROUP BY u.id, u.name, u.email, u.role, u.status
+      ORDER BY 
+        CASE 
+          WHEN MAX(s.last_activity) > NOW() - INTERVAL '2 minutes' THEN 1
+          WHEN MAX(s.last_activity) > NOW() - INTERVAL '10 minutes' THEN 2
+          ELSE 3
+        END,
+        MAX(s.last_activity) DESC
     `);
 
     res.json({
       success: true,
       data: {
-        activeSessions: parseInt(activeSessionsResult.rows[0].count),
-        totalSessions: parseInt(totalSessionsResult.rows[0].count),
-        sessionsByUser: sessionsByUserResult.rows
+        activeUsers: parseInt(activeUsersResult.rows[0].count),
+        totalUsers: parseInt(totalUsersResult.rows[0].count),
+        usersActivity: usersActivityResult.rows
       }
     });
   } catch (error) {

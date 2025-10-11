@@ -43,21 +43,22 @@ const Dashboard = () => {
   const managerUsers = users.filter(u => u.role === 'manager').length;
   const basicUsers = users.filter(u => u.role === 'basicuser').length;
 
-  // Session statistics
-  const activeSessions = sessionStats?.data?.data?.activeSessions || 0;
-  const totalSessions = sessionStats?.data?.data?.totalSessions || 0;
+  // User statistics
+  const activeUsers = sessionStats?.data?.data?.activeUsers || 0;
+  const totalUsers = sessionStats?.data?.data?.totalUsers || 0;
+  const usersActivity = sessionStats?.data?.data?.usersActivity || [];
 
   const stats = [
     {
       name: 'Total Users',
-      value: users.length,
+      value: totalUsers,
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100'
     },
     {
-      name: 'Active Sessions',
-      value: activeSessions,
+      name: 'Active Users',
+      value: activeUsers,
       icon: UserCheck,
       color: 'text-green-600',
       bgColor: 'bg-green-100'
@@ -70,8 +71,8 @@ const Dashboard = () => {
       bgColor: 'bg-red-100'
     },
     {
-      name: 'Total Sessions',
-      value: totalSessions,
+      name: 'Online Now',
+      value: usersActivity.filter(u => u.status_text === 'Online').length,
       icon: Shield,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100'
@@ -266,6 +267,46 @@ const Dashboard = () => {
 
       {/* Charts and Additional Info */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        {/* User Activity Status */}
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              User Activity Status
+            </h3>
+            <div className="mt-5">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-green-500 mr-3"></div>
+                    <span className="text-sm font-medium text-gray-700">Online</span>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {usersActivity.filter(u => u.status_text === 'Online').length}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-yellow-500 mr-3"></div>
+                    <span className="text-sm font-medium text-gray-700">Away</span>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {usersActivity.filter(u => u.status_text === 'Away').length}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-gray-400 mr-3"></div>
+                    <span className="text-sm font-medium text-gray-700">Offline</span>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {usersActivity.filter(u => u.status_text === 'Offline').length}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Role Distribution */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
