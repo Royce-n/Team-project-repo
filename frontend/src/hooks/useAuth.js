@@ -16,30 +16,85 @@ export const useAuth = () => {
       }
       localStorage.removeItem('msal.cache');
       localStorage.removeItem('token');
-      sessionStorage.clear();
+      sessionStorage.removeItem('sessionToken');
       setUser(null);
       delete api.defaults.headers.common['Authorization'];
+      delete api.defaults.headers.common['X-Session-Token'];
     } catch (error) {
       console.error('Error clearing auth state:', error);
     }
   };
 
-  // Handle tab close detection
+  // Handle tab visibility changes and heartbeat
   useEffect(() => {
-    const handleBeforeUnload = async () => {
-      // Send session cleanup request when tab is closed
-      const sessionToken = localStorage.getItem('sessionToken');
-      if (sessionToken) {
-        // Use sendBeacon for reliable delivery even when page is unloading
-        const data = JSON.stringify({ sessionToken });
-        navigator.sendBeacon('/api/auth/logout', data);
+    let heartbeatInterval;
+    let sessionToken = sessionStorage.getItem('sessionToken');
+
+    const handleVisibilityChange = async () => {
+      if (document.hidden) {
+        // Tab is hidden/minimized - mark session as inactive
+        if (sessionToken) {
+          try {
+            await api.post('/auth/sessions/inactive', { sessionToken });
+          } catch (error) {
+            console.log('Failed to mark session as inactive:', error);
+          }
+        }
+        // Clear heartbeat when tab is hidden
+        if (heartbeatInterval) {
+          clearInterval(heartbeatInterval);
+          heartbeatInterval = null;
+        }
+      } else {
+        // Tab is visible - mark session as active and start heartbeat
+        if (sessionToken) {
+          try {
+            await api.post('/auth/sessions/active', { sessionToken });
+            // Start heartbeat to keep session active
+            startHeartbeat();
+          } catch (error) {
+            console.log('Failed to mark session as active:', error);
+          }
+        }
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
+    const startHeartbeat = () => {
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
+      
+      heartbeatInterval = setInterval(async () => {
+        if (!document.hidden && sessionToken) {
+          try {
+            await api.post('/auth/sessions/heartbeat', { sessionToken });
+          } catch (error) {
+            console.log('Heartbeat failed:', error);
+            // If heartbeat fails, session might be expired
+            if (error.response?.status === 401) {
+              clearInterval(heartbeatInterval);
+              setUser(null);
+              localStorage.removeItem('token');
+              sessionStorage.removeItem('sessionToken');
+              delete api.defaults.headers.common['Authorization'];
+              delete api.defaults.headers.common['X-Session-Token'];
+            }
+          }
+        }
+      }, 30000); // Heartbeat every 30 seconds
+    };
+
+    // Set up visibility change listener
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Start heartbeat if tab is visible
+    if (!document.hidden && sessionToken) {
+      startHeartbeat();
+    }
+
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+      }
     };
   }, []);
 
@@ -52,7 +107,7 @@ export const useAuth = () => {
 
       // Check if we have a stored token first
       const storedToken = localStorage.getItem('token');
-      const storedSessionToken = localStorage.getItem('sessionToken');
+      const storedSessionToken = sessionStorage.getItem('sessionToken');
       if (storedToken && !api.defaults.headers.common['Authorization']) {
         api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
         if (storedSessionToken) {
@@ -66,7 +121,7 @@ export const useAuth = () => {
         } catch (error) {
           console.log('Stored token invalid, clearing...');
           localStorage.removeItem('token');
-          localStorage.removeItem('sessionToken');
+          sessionStorage.removeItem('sessionToken');
           delete api.defaults.headers.common['Authorization'];
           delete api.defaults.headers.common['X-Session-Token'];
         }
@@ -196,7 +251,7 @@ export const useAuth = () => {
       delete api.defaults.headers.common['Authorization'];
       delete api.defaults.headers.common['X-Session-Token'];
       localStorage.removeItem('token');
-      localStorage.removeItem('sessionToken');
+      sessionStorage.removeItem('sessionToken');
     } catch (error) {
       console.error('Logout error:', error);
     }

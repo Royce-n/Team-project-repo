@@ -84,8 +84,8 @@ router.post('/office365', [
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
     
     await query(
-      'INSERT INTO user_sessions (user_id, session_token, expires_at) VALUES ($1, $2, $3)',
-      [user.id, sessionToken, expiresAt]
+      'INSERT INTO user_sessions (user_id, session_token, is_active, last_activity, expires_at) VALUES ($1, $2, $3, $4, $5)',
+      [user.id, sessionToken, true, new Date(), expiresAt]
     );
 
     res.json({
@@ -185,9 +185,9 @@ router.get('/sessions/stats', authenticateToken, async (req, res) => {
       });
     }
 
-    // Get active sessions (not expired)
+    // Get active sessions (not expired and is_active = true)
     const activeSessionsResult = await query(
-      'SELECT COUNT(*) as count FROM user_sessions WHERE expires_at > NOW()'
+      'SELECT COUNT(*) as count FROM user_sessions WHERE expires_at > NOW() AND is_active = true'
     );
 
     // Get total sessions (including expired)
@@ -201,12 +201,13 @@ router.get('/sessions/stats', authenticateToken, async (req, res) => {
         u.id, 
         u.name, 
         u.email, 
-        COUNT(s.id) as session_count,
-        MAX(s.created_at) as last_login
+        COUNT(s.id) as total_sessions,
+        COUNT(CASE WHEN s.is_active = true AND s.expires_at > NOW() THEN 1 END) as active_sessions,
+        MAX(s.last_activity) as last_activity
       FROM users u 
-      LEFT JOIN user_sessions s ON u.id = s.user_id AND s.expires_at > NOW()
+      LEFT JOIN user_sessions s ON u.id = s.user_id
       GROUP BY u.id, u.name, u.email
-      ORDER BY session_count DESC
+      ORDER BY active_sessions DESC, total_sessions DESC
     `);
 
     res.json({
@@ -222,6 +223,120 @@ router.get('/sessions/stats', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to get session statistics'
+    });
+  }
+});
+
+// Mark session as active (when tab becomes visible)
+router.post('/sessions/active', async (req, res) => {
+  try {
+    const { sessionToken } = req.body;
+
+    if (!sessionToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Session token required'
+      });
+    }
+
+    // Update session to active and extend expiry
+    const result = await query(
+      'UPDATE user_sessions SET is_active = true, last_activity = CURRENT_TIMESTAMP, expires_at = CURRENT_TIMESTAMP + INTERVAL \'24 hours\' WHERE session_token = $1 AND expires_at > NOW()',
+      [sessionToken]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Session not found or expired'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Session marked as active'
+    });
+  } catch (error) {
+    console.error('Mark session active error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to mark session as active'
+    });
+  }
+});
+
+// Mark session as inactive (when tab is hidden)
+router.post('/sessions/inactive', async (req, res) => {
+  try {
+    const { sessionToken } = req.body;
+
+    if (!sessionToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Session token required'
+      });
+    }
+
+    // Update session to inactive
+    const result = await query(
+      'UPDATE user_sessions SET is_active = false, last_activity = CURRENT_TIMESTAMP WHERE session_token = $1',
+      [sessionToken]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Session not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Session marked as inactive'
+    });
+  } catch (error) {
+    console.error('Mark session inactive error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to mark session as inactive'
+    });
+  }
+});
+
+// Heartbeat to keep session alive
+router.post('/sessions/heartbeat', async (req, res) => {
+  try {
+    const { sessionToken } = req.body;
+
+    if (!sessionToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Session token required'
+      });
+    }
+
+    // Update last activity and extend expiry if session is active
+    const result = await query(
+      'UPDATE user_sessions SET last_activity = CURRENT_TIMESTAMP, expires_at = CURRENT_TIMESTAMP + INTERVAL \'24 hours\' WHERE session_token = $1 AND expires_at > NOW()',
+      [sessionToken]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Session not found or expired'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Heartbeat received'
+    });
+  } catch (error) {
+    console.error('Session heartbeat error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process heartbeat'
     });
   }
 });
