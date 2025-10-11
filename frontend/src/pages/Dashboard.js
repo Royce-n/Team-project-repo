@@ -37,7 +37,7 @@ const Dashboard = () => {
   }, [user?.role, queryClient]);
 
   const users = usersData?.data?.data || [];
-  const activeUsers = users.filter(u => u.status === 'active').length;
+  const activeUserAccounts = users.filter(u => u.status === 'active').length;
   const inactiveUsers = users.filter(u => u.status === 'inactive').length;
   const adminUsers = users.filter(u => u.role === 'admin').length;
   const managerUsers = users.filter(u => u.role === 'manager').length;
