@@ -138,12 +138,14 @@ const Dashboard = () => {
               Quick Actions
             </h3>
             <div className="mt-5 space-y-3">
-              <a
-                href="/users"
-                className="block w-full bg-primary-50 border border-primary-200 rounded-md py-2 px-4 text-sm font-medium text-primary-700 hover:bg-primary-100 text-center"
-              >
-                Manage Users
-              </a>
+              {(user?.role === 'admin' || user?.role === 'manager') && (
+                <a
+                  href="/users"
+                  className="block w-full bg-primary-50 border border-primary-200 rounded-md py-2 px-4 text-sm font-medium text-primary-700 hover:bg-primary-100 text-center"
+                >
+                  Manage Users
+                </a>
+              )}
               {(user?.role === 'admin') && (
                 <a
                   href="/roles"
