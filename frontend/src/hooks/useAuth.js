@@ -59,6 +59,19 @@ export const useAuth = () => {
       }
     };
 
+    const handleBeforeUnload = async () => {
+      // Clean up session when tab is actually closed
+      if (sessionToken) {
+        try {
+          // Use sendBeacon for reliable delivery even when page is unloading
+          const data = JSON.stringify({ sessionToken });
+          navigator.sendBeacon('/api/auth/sessions/close', data);
+        } catch (error) {
+          console.log('Failed to cleanup session on close:', error);
+        }
+      }
+    };
+
     const startHeartbeat = () => {
       if (heartbeatInterval) clearInterval(heartbeatInterval);
       
@@ -82,8 +95,9 @@ export const useAuth = () => {
       }, 30000); // Heartbeat every 30 seconds
     };
 
-    // Set up visibility change listener
+    // Set up event listeners
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     // Start heartbeat if tab is visible
     if (!document.hidden && sessionToken) {
@@ -92,6 +106,7 @@ export const useAuth = () => {
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       if (heartbeatInterval) {
         clearInterval(heartbeatInterval);
       }

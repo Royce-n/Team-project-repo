@@ -79,6 +79,12 @@ router.post('/office365', [
       { expiresIn: '24h' }
     );
 
+    // Clean up old sessions for this user (keep only last 3 sessions)
+    await query(
+      'DELETE FROM user_sessions WHERE user_id = $1 AND id NOT IN (SELECT id FROM user_sessions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 3)',
+      [user.id]
+    );
+
     // Create session record
     const sessionToken = require('crypto').randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
@@ -341,6 +347,37 @@ router.post('/sessions/heartbeat', async (req, res) => {
   }
 });
 
+// Close session (when tab is closed)
+router.post('/sessions/close', async (req, res) => {
+  try {
+    const { sessionToken } = req.body;
+
+    if (!sessionToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Session token required'
+      });
+    }
+
+    // Delete the specific session
+    const result = await query(
+      'DELETE FROM user_sessions WHERE session_token = $1',
+      [sessionToken]
+    );
+
+    res.json({
+      success: true,
+      message: 'Session closed'
+    });
+  } catch (error) {
+    console.error('Session close error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to close session'
+    });
+  }
+});
+
 // Cleanup expired sessions
 router.post('/sessions/cleanup', authenticateToken, async (req, res) => {
   try {
@@ -352,13 +389,26 @@ router.post('/sessions/cleanup', authenticateToken, async (req, res) => {
       });
     }
 
-    const result = await query(
+    // Clean up expired sessions
+    const expiredResult = await query(
       'DELETE FROM user_sessions WHERE expires_at <= NOW()'
     );
 
+    // Clean up excess sessions (keep only 3 per user)
+    const excessResult = await query(`
+      DELETE FROM user_sessions 
+      WHERE id NOT IN (
+        SELECT id FROM (
+          SELECT id, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY created_at DESC) as rn
+          FROM user_sessions
+        ) ranked 
+        WHERE rn <= 3
+      )
+    `);
+
     res.json({
       success: true,
-      message: `Cleaned up ${result.rowCount} expired sessions`
+      message: `Cleaned up ${expiredResult.rowCount} expired sessions and ${excessResult.rowCount} excess sessions`
     });
   } catch (error) {
     console.error('Session cleanup error:', error);
