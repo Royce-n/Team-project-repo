@@ -214,34 +214,34 @@ router.get('/sessions/stats', authenticateToken, async (req, res) => {
       'SELECT COUNT(*) as count FROM users WHERE status = \'active\''
     );
 
-    // Get user activity details
-    const usersActivityResult = await query(`
-      SELECT 
-        u.id, 
-        u.name, 
-        u.email,
-        u.role,
-        u.status,
-        COUNT(s.id) as total_sessions,
-        COUNT(CASE WHEN s.is_active = true AND s.expires_at > NOW() THEN 1 END) as active_sessions,
-        MAX(s.last_activity) as last_activity,
-        CASE 
-          WHEN MAX(s.last_activity) > NOW() - INTERVAL '2 minutes' THEN 'Online'
-          WHEN MAX(s.last_activity) > NOW() - INTERVAL '10 minutes' THEN 'Away'
-          ELSE 'Offline'
-        END as status_text
-      FROM users u 
-      LEFT JOIN user_sessions s ON u.id = s.user_id
-      WHERE u.status = 'active'
-      GROUP BY u.id, u.name, u.email, u.role, u.status
-      ORDER BY 
-        CASE 
-          WHEN MAX(s.last_activity) > NOW() - INTERVAL '2 minutes' THEN 1
-          WHEN MAX(s.last_activity) > NOW() - INTERVAL '10 minutes' THEN 2
-          ELSE 3
-        END,
-        MAX(s.last_activity) DESC
-    `);
+      // Get user activity details
+      const usersActivityResult = await query(`
+        SELECT 
+          u.id, 
+          u.name, 
+          u.email,
+          u.role,
+          u.status,
+          COUNT(s.id) as total_sessions,
+          COUNT(CASE WHEN s.is_active = true AND s.expires_at > NOW() THEN 1 END) as active_sessions,
+          MAX(s.last_activity) as last_activity,
+          CASE 
+            WHEN MAX(s.last_activity) > NOW() - INTERVAL '30 seconds' AND MAX(s.is_active) = true THEN 'Online'
+            WHEN MAX(s.last_activity) > NOW() - INTERVAL '2 minutes' THEN 'Away'
+            ELSE 'Offline'
+          END as status_text
+        FROM users u 
+        LEFT JOIN user_sessions s ON u.id = s.user_id
+        WHERE u.status = 'active'
+        GROUP BY u.id, u.name, u.email, u.role, u.status
+        ORDER BY 
+          CASE 
+            WHEN MAX(s.last_activity) > NOW() - INTERVAL '30 seconds' AND MAX(s.is_active) = true THEN 1
+            WHEN MAX(s.last_activity) > NOW() - INTERVAL '2 minutes' THEN 2
+            ELSE 3
+          END,
+          MAX(s.last_activity) DESC
+      `);
 
     res.json({
       success: true,
@@ -445,11 +445,11 @@ router.post('/sessions/cleanup', authenticateToken, async (req, res) => {
 // Auto-cleanup function to mark sessions as inactive
 const autoCleanupSessions = async () => {
   try {
-    // Mark sessions as inactive if no heartbeat for 2 minutes
+    // Mark sessions as inactive if no activity for 30 seconds
     const result = await query(`
       UPDATE user_sessions 
       SET is_active = false 
-      WHERE last_activity < NOW() - INTERVAL '2 minutes' 
+      WHERE last_activity < NOW() - INTERVAL '30 seconds' 
       AND is_active = true
     `);
     
@@ -461,7 +461,7 @@ const autoCleanupSessions = async () => {
   }
 };
 
-// Run auto-cleanup every minute
-setInterval(autoCleanupSessions, 60000);
+// Run auto-cleanup every 10 seconds for more responsive activity tracking
+setInterval(autoCleanupSessions, 10000);
 
 module.exports = router;

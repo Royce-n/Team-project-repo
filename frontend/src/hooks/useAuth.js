@@ -28,7 +28,33 @@ export const useAuth = () => {
   // Handle tab visibility changes and heartbeat
   useEffect(() => {
     let heartbeatInterval;
+    let activityTimeout;
     let sessionToken = sessionStorage.getItem('sessionToken');
+
+    const handleUserActivity = async () => {
+      if (sessionToken && !document.hidden) {
+        try {
+          // Mark as active on any user interaction
+          await api.post('/auth/sessions/active', { sessionToken });
+          
+          // Clear existing timeout and set new one
+          if (activityTimeout) {
+            clearTimeout(activityTimeout);
+          }
+          
+          // Set timeout to mark as away after 30 seconds of inactivity
+          activityTimeout = setTimeout(async () => {
+            try {
+              await api.post('/auth/sessions/inactive', { sessionToken });
+            } catch (error) {
+              console.log('Failed to mark session as inactive:', error);
+            }
+          }, 30000); // 30 seconds
+        } catch (error) {
+          console.log('Failed to mark session as active:', error);
+        }
+      }
+    };
 
     const handleVisibilityChange = async () => {
       if (document.hidden) {
@@ -40,10 +66,14 @@ export const useAuth = () => {
             console.log('Failed to mark session as inactive:', error);
           }
         }
-        // Clear heartbeat when tab is hidden
+        // Clear heartbeat and activity timeout when tab is hidden
         if (heartbeatInterval) {
           clearInterval(heartbeatInterval);
           heartbeatInterval = null;
+        }
+        if (activityTimeout) {
+          clearTimeout(activityTimeout);
+          activityTimeout = null;
         }
       } else {
         // Tab is visible - mark session as active and start heartbeat
@@ -52,6 +82,8 @@ export const useAuth = () => {
             await api.post('/auth/sessions/active', { sessionToken });
             // Start heartbeat to keep session active
             startHeartbeat();
+            // Set up activity timeout
+            handleUserActivity();
           } catch (error) {
             console.log('Failed to mark session as active:', error);
           }
@@ -95,20 +127,41 @@ export const useAuth = () => {
       }, 30000); // Heartbeat every 30 seconds
     };
 
+    // Set up activity listeners for user interactions
+    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    
+    const setupActivityListeners = () => {
+      activityEvents.forEach(event => {
+        document.addEventListener(event, handleUserActivity, true);
+      });
+    };
+
+    const removeActivityListeners = () => {
+      activityEvents.forEach(event => {
+        document.removeEventListener(event, handleUserActivity, true);
+      });
+    };
+
     // Set up event listeners
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
+    setupActivityListeners();
 
     // Start heartbeat if tab is visible
     if (!document.hidden && sessionToken) {
       startHeartbeat();
+      handleUserActivity(); // Set up initial activity timeout
     }
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      removeActivityListeners();
       if (heartbeatInterval) {
         clearInterval(heartbeatInterval);
+      }
+      if (activityTimeout) {
+        clearTimeout(activityTimeout);
       }
     };
   }, []);

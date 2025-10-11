@@ -273,12 +273,18 @@ const Dashboard = () => {
             <h3 className="text-lg leading-6 font-medium text-gray-900">
               User Activity Status
             </h3>
+            <div className="mt-2 mb-4">
+              <p className="text-xs text-gray-500">
+                💡 Activity tracking: Click anywhere to stay active. Inactive after 30 seconds.
+              </p>
+            </div>
             <div className="mt-5">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <div className="w-3 h-3 rounded-full bg-green-500 mr-3"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500 mr-3 animate-pulse"></div>
                     <span className="text-sm font-medium text-gray-700">Online</span>
+                    <span className="text-xs text-gray-400 ml-2">(active in 30s)</span>
                   </div>
                   <span className="text-sm text-gray-500">
                     {usersActivity.filter(u => u.status_text === 'Online').length}
@@ -288,6 +294,7 @@ const Dashboard = () => {
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full bg-yellow-500 mr-3"></div>
                     <span className="text-sm font-medium text-gray-700">Away</span>
+                    <span className="text-xs text-gray-400 ml-2">(2 min ago)</span>
                   </div>
                   <span className="text-sm text-gray-500">
                     {usersActivity.filter(u => u.status_text === 'Away').length}
@@ -297,6 +304,7 @@ const Dashboard = () => {
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full bg-gray-400 mr-3"></div>
                     <span className="text-sm font-medium text-gray-700">Offline</span>
+                    <span className="text-xs text-gray-400 ml-2">(10+ min ago)</span>
                   </div>
                   <span className="text-sm text-gray-500">
                     {usersActivity.filter(u => u.status_text === 'Offline').length}
