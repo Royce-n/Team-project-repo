@@ -24,8 +24,8 @@ const Dashboard = () => {
     () => api.get('/auth/sessions/stats'),
     {
       enabled: user?.role === 'admin' || user?.role === 'manager',
-      staleTime: 30000, // Refresh every 30 seconds
-      refetchInterval: 30000 // Auto-refresh every 30 seconds
+      staleTime: 10000, // Refresh every 10 seconds
+      refetchInterval: 10000 // Auto-refresh every 10 seconds for real-time updates
     }
   );
 

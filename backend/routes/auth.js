@@ -79,12 +79,6 @@ router.post('/office365', [
       { expiresIn: '24h' }
     );
 
-    // Clean up old sessions for this user (keep only last 3 sessions)
-    await query(
-      'DELETE FROM user_sessions WHERE user_id = $1 AND id NOT IN (SELECT id FROM user_sessions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 3)',
-      [user.id]
-    );
-
     // Create session record
     const sessionToken = require('crypto').randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
@@ -394,21 +388,17 @@ router.post('/sessions/cleanup', authenticateToken, async (req, res) => {
       'DELETE FROM user_sessions WHERE expires_at <= NOW()'
     );
 
-    // Clean up excess sessions (keep only 3 per user)
-    const excessResult = await query(`
-      DELETE FROM user_sessions 
-      WHERE id NOT IN (
-        SELECT id FROM (
-          SELECT id, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY created_at DESC) as rn
-          FROM user_sessions
-        ) ranked 
-        WHERE rn <= 3
-      )
+    // Mark sessions as inactive if no heartbeat for 2 minutes
+    const inactiveResult = await query(`
+      UPDATE user_sessions 
+      SET is_active = false 
+      WHERE last_activity < NOW() - INTERVAL '2 minutes' 
+      AND is_active = true
     `);
 
     res.json({
       success: true,
-      message: `Cleaned up ${expiredResult.rowCount} expired sessions and ${excessResult.rowCount} excess sessions`
+      message: `Cleaned up ${expiredResult.rowCount} expired sessions and marked ${inactiveResult.rowCount} sessions as inactive`
     });
   } catch (error) {
     console.error('Session cleanup error:', error);
@@ -418,5 +408,27 @@ router.post('/sessions/cleanup', authenticateToken, async (req, res) => {
     });
   }
 });
+
+// Auto-cleanup function to mark sessions as inactive
+const autoCleanupSessions = async () => {
+  try {
+    // Mark sessions as inactive if no heartbeat for 2 minutes
+    const result = await query(`
+      UPDATE user_sessions 
+      SET is_active = false 
+      WHERE last_activity < NOW() - INTERVAL '2 minutes' 
+      AND is_active = true
+    `);
+    
+    if (result.rowCount > 0) {
+      console.log(`Auto-cleanup: Marked ${result.rowCount} sessions as inactive`);
+    }
+  } catch (error) {
+    console.error('Auto-cleanup error:', error);
+  }
+};
+
+// Run auto-cleanup every minute
+setInterval(autoCleanupSessions, 60000);
 
 module.exports = router;
