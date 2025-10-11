@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useAuth } from '../hooks/useAuth';
-import { userAPI } from '../services/api';
+import { userAPI, api } from '../services/api';
 import { Users, Shield, UserCheck, UserX, TrendingUp } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -19,6 +19,16 @@ const Dashboard = () => {
     }
   );
 
+  const { data: sessionStats, isLoading: sessionStatsLoading } = useQuery(
+    'sessionStats',
+    () => api.get('/auth/sessions/stats'),
+    {
+      enabled: user?.role === 'admin' || user?.role === 'manager',
+      staleTime: 30000, // Refresh every 30 seconds
+      refetchInterval: 30000 // Auto-refresh every 30 seconds
+    }
+  );
+
   // Clear users cache when user role changes to prevent showing wrong data
   useEffect(() => {
     if (user?.role === 'basicuser') {
@@ -33,6 +43,10 @@ const Dashboard = () => {
   const managerUsers = users.filter(u => u.role === 'manager').length;
   const basicUsers = users.filter(u => u.role === 'basicuser').length;
 
+  // Session statistics
+  const activeSessions = sessionStats?.data?.data?.activeSessions || 0;
+  const totalSessions = sessionStats?.data?.data?.totalSessions || 0;
+
   const stats = [
     {
       name: 'Total Users',
@@ -42,8 +56,8 @@ const Dashboard = () => {
       bgColor: 'bg-blue-100'
     },
     {
-      name: 'Active Users',
-      value: activeUsers,
+      name: 'Active Sessions',
+      value: activeSessions,
       icon: UserCheck,
       color: 'text-green-600',
       bgColor: 'bg-green-100'
@@ -56,8 +70,8 @@ const Dashboard = () => {
       bgColor: 'bg-red-100'
     },
     {
-      name: 'Administrators',
-      value: adminUsers,
+      name: 'Total Sessions',
+      value: totalSessions,
       icon: Shield,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100'
@@ -79,8 +93,8 @@ const Dashboard = () => {
     );
   }
 
-  // Show loading spinner for admin/manager users while fetching user data
-  if ((user?.role === 'admin' || user?.role === 'manager') && usersLoading) {
+  // Show loading spinner for admin/manager users while fetching data
+  if ((user?.role === 'admin' || user?.role === 'manager') && (usersLoading || sessionStatsLoading)) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner />

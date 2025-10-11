@@ -79,9 +79,19 @@ router.post('/office365', [
       { expiresIn: '24h' }
     );
 
+    // Create session record
+    const sessionToken = require('crypto').randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+    
+    await query(
+      'INSERT INTO user_sessions (user_id, session_token, expires_at) VALUES ($1, $2, $3)',
+      [user.id, sessionToken, expiresAt]
+    );
+
     res.json({
       success: true,
       token,
+      sessionToken,
       user: {
         id: user.id,
         email: user.email,
@@ -124,12 +134,36 @@ router.get('/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Logout (client-side token removal)
-router.post('/logout', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Logged out successfully'
-  });
+// Logout (server-side session removal)
+router.post('/logout', authenticateToken, async (req, res) => {
+  try {
+    const sessionToken = req.headers['x-session-token'];
+    
+    if (sessionToken) {
+      // Remove the specific session
+      await query(
+        'DELETE FROM user_sessions WHERE user_id = $1 AND session_token = $2',
+        [req.user.id, sessionToken]
+      );
+    } else {
+      // Remove all sessions for the user (if no specific session token provided)
+      await query(
+        'DELETE FROM user_sessions WHERE user_id = $1',
+        [req.user.id]
+      );
+    }
+
+    res.json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to logout'
+    });
+  }
 });
 
 // Verify token
@@ -138,6 +172,86 @@ router.get('/verify', authenticateToken, (req, res) => {
     success: true,
     user: req.user
   });
+});
+
+// Get session statistics (admin/manager only)
+router.get('/sessions/stats', authenticateToken, async (req, res) => {
+  try {
+    // Check if user has permission to view session stats
+    if (!['admin', 'manager'].includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Insufficient permissions'
+      });
+    }
+
+    // Get active sessions (not expired)
+    const activeSessionsResult = await query(
+      'SELECT COUNT(*) as count FROM user_sessions WHERE expires_at > NOW()'
+    );
+
+    // Get total sessions (including expired)
+    const totalSessionsResult = await query(
+      'SELECT COUNT(*) as count FROM user_sessions'
+    );
+
+    // Get sessions by user
+    const sessionsByUserResult = await query(`
+      SELECT 
+        u.id, 
+        u.name, 
+        u.email, 
+        COUNT(s.id) as session_count,
+        MAX(s.created_at) as last_login
+      FROM users u 
+      LEFT JOIN user_sessions s ON u.id = s.user_id AND s.expires_at > NOW()
+      GROUP BY u.id, u.name, u.email
+      ORDER BY session_count DESC
+    `);
+
+    res.json({
+      success: true,
+      data: {
+        activeSessions: parseInt(activeSessionsResult.rows[0].count),
+        totalSessions: parseInt(totalSessionsResult.rows[0].count),
+        sessionsByUser: sessionsByUserResult.rows
+      }
+    });
+  } catch (error) {
+    console.error('Session stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get session statistics'
+    });
+  }
+});
+
+// Cleanup expired sessions
+router.post('/sessions/cleanup', authenticateToken, async (req, res) => {
+  try {
+    // Only admins can trigger cleanup
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Admin access required'
+      });
+    }
+
+    const result = await query(
+      'DELETE FROM user_sessions WHERE expires_at <= NOW()'
+    );
+
+    res.json({
+      success: true,
+      message: `Cleaned up ${result.rowCount} expired sessions`
+    });
+  } catch (error) {
+    console.error('Session cleanup error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to cleanup sessions'
+    });
+  }
 });
 
 module.exports = router;

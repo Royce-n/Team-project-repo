@@ -24,6 +24,25 @@ export const useAuth = () => {
     }
   };
 
+  // Handle tab close detection
+  useEffect(() => {
+    const handleBeforeUnload = async () => {
+      // Send session cleanup request when tab is closed
+      const sessionToken = localStorage.getItem('sessionToken');
+      if (sessionToken) {
+        // Use sendBeacon for reliable delivery even when page is unloading
+        const data = JSON.stringify({ sessionToken });
+        navigator.sendBeacon('/api/auth/logout', data);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
   // Handle authentication when accounts change
   useEffect(() => {
     const handleAuth = async () => {
@@ -33,8 +52,12 @@ export const useAuth = () => {
 
       // Check if we have a stored token first
       const storedToken = localStorage.getItem('token');
+      const storedSessionToken = localStorage.getItem('sessionToken');
       if (storedToken && !api.defaults.headers.common['Authorization']) {
         api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+        if (storedSessionToken) {
+          api.defaults.headers.common['X-Session-Token'] = storedSessionToken;
+        }
         try {
           const profileResponse = await api.get('/auth/profile');
           setUser(profileResponse.data.user);
@@ -43,7 +66,9 @@ export const useAuth = () => {
         } catch (error) {
           console.log('Stored token invalid, clearing...');
           localStorage.removeItem('token');
+          localStorage.removeItem('sessionToken');
           delete api.defaults.headers.common['Authorization'];
+          delete api.defaults.headers.common['X-Session-Token'];
         }
       }
 
@@ -62,7 +87,12 @@ export const useAuth = () => {
 
           // Set the JWT token from backend
           const jwtToken = backendResponse.data.token;
+          const sessionToken = backendResponse.data.sessionToken;
           api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
+          if (sessionToken) {
+            api.defaults.headers.common['X-Session-Token'] = sessionToken;
+            localStorage.setItem('sessionToken', sessionToken);
+          }
           localStorage.setItem('token', jwtToken);
           
           // Now get user profile with JWT token
@@ -113,7 +143,12 @@ export const useAuth = () => {
 
           // Set the JWT token from backend
           const jwtToken = backendResponse.data.token;
+          const sessionToken = backendResponse.data.sessionToken;
           api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
+          if (sessionToken) {
+            api.defaults.headers.common['X-Session-Token'] = sessionToken;
+            localStorage.setItem('sessionToken', sessionToken);
+          }
           localStorage.setItem('token', jwtToken);
           
           setUser(backendResponse.data.user);
@@ -147,12 +182,21 @@ export const useAuth = () => {
 
   const logout = async () => {
     try {
+      // Notify server to remove session
+      try {
+        await api.post('/auth/logout');
+      } catch (error) {
+        console.log('Server logout failed, continuing with client logout');
+      }
+
       await instance.logoutRedirect({
         postLogoutRedirectUri: window.location.origin
       });
       setUser(null);
       delete api.defaults.headers.common['Authorization'];
+      delete api.defaults.headers.common['X-Session-Token'];
       localStorage.removeItem('token');
+      localStorage.removeItem('sessionToken');
     } catch (error) {
       console.error('Logout error:', error);
     }
