@@ -123,11 +123,9 @@ export const useAuth = () => {
       // Check if we have a stored token first
       const storedToken = localStorage.getItem('token');
       const storedSessionToken = sessionStorage.getItem('sessionToken');
-      if (storedToken && !api.defaults.headers.common['Authorization']) {
+      if (storedToken && storedSessionToken && !api.defaults.headers.common['Authorization']) {
         api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-        if (storedSessionToken) {
-          api.defaults.headers.common['X-Session-Token'] = storedSessionToken;
-        }
+        api.defaults.headers.common['X-Session-Token'] = storedSessionToken;
         try {
           const profileResponse = await api.get('/auth/profile');
           setUser(profileResponse.data.user);
@@ -150,7 +148,25 @@ export const useAuth = () => {
             account: account
           });
 
-          // Authenticate with backend to get JWT token
+          // Check if we already have a valid session first
+          const existingSessionToken = sessionStorage.getItem('sessionToken');
+          if (existingSessionToken) {
+            try {
+              // Try to use existing session
+              api.defaults.headers.common['X-Session-Token'] = existingSessionToken;
+              const profileResponse = await api.get('/auth/profile');
+              setUser(profileResponse.data.user);
+              setLoading(false);
+              return;
+            } catch (error) {
+              console.log('Existing session invalid, creating new one');
+              // Clear invalid session and create new one
+              sessionStorage.removeItem('sessionToken');
+              delete api.defaults.headers.common['X-Session-Token'];
+            }
+          }
+
+          // Authenticate with backend to get JWT token (only if no valid session)
           const backendResponse = await api.post('/auth/office365', {
             accessToken: tokenResponse.accessToken
           });
@@ -161,7 +177,7 @@ export const useAuth = () => {
           api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
           if (sessionToken) {
             api.defaults.headers.common['X-Session-Token'] = sessionToken;
-            localStorage.setItem('sessionToken', sessionToken);
+            sessionStorage.setItem('sessionToken', sessionToken);
           }
           localStorage.setItem('token', jwtToken);
           

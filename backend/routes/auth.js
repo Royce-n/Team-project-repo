@@ -79,14 +79,31 @@ router.post('/office365', [
       { expiresIn: '24h' }
     );
 
-    // Create session record
-    const sessionToken = require('crypto').randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
-    
-    await query(
-      'INSERT INTO user_sessions (user_id, session_token, is_active, last_activity, expires_at) VALUES ($1, $2, $3, $4, $5)',
-      [user.id, sessionToken, true, new Date(), expiresAt]
+    // Check if user already has an active session
+    let sessionToken;
+    const existingSession = await query(
+      'SELECT session_token FROM user_sessions WHERE user_id = $1 AND is_active = true AND expires_at > NOW() ORDER BY last_activity DESC LIMIT 1',
+      [user.id]
     );
+
+    if (existingSession.rows.length > 0) {
+      // Reuse existing session
+      sessionToken = existingSession.rows[0].session_token;
+      // Update last activity
+      await query(
+        'UPDATE user_sessions SET last_activity = CURRENT_TIMESTAMP WHERE session_token = $1',
+        [sessionToken]
+      );
+    } else {
+      // Create new session record
+      sessionToken = require('crypto').randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+      
+      await query(
+        'INSERT INTO user_sessions (user_id, session_token, is_active, last_activity, expires_at) VALUES ($1, $2, $3, $4, $5)',
+        [user.id, sessionToken, true, new Date(), expiresAt]
+      );
+    }
 
     res.json({
       success: true,
