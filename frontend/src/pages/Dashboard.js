@@ -1,20 +1,30 @@
-import React from 'react';
-import { useQuery } from 'react-query';
+import React, { useEffect } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
 import { useAuth } from '../hooks/useAuth';
 import { userAPI } from '../services/api';
 import { Users, Shield, UserCheck, UserX, TrendingUp } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data: usersData, isLoading: usersLoading } = useQuery(
     'users',
     () => userAPI.getUsers({ limit: 1000 }),
     {
-      enabled: user?.role === 'admin' || user?.role === 'manager'
+      enabled: user?.role === 'admin' || user?.role === 'manager',
+      staleTime: 0, // Always consider data stale to prevent caching issues
+      cacheTime: 0 // Don't cache the data
     }
   );
+
+  // Clear users cache when user role changes to prevent showing wrong data
+  useEffect(() => {
+    if (user?.role === 'basicuser') {
+      queryClient.removeQueries('users');
+    }
+  }, [user?.role, queryClient]);
 
   const users = usersData?.data?.data || [];
   const activeUsers = users.filter(u => u.status === 'active').length;
@@ -60,7 +70,17 @@ const Dashboard = () => {
     { name: 'Administrators', value: adminUsers, color: 'bg-purple-500' }
   ];
 
-  if (usersLoading) {
+  // Show loading spinner while auth is loading or user data is not available
+  if (authLoading || !user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // Show loading spinner for admin/manager users while fetching user data
+  if ((user?.role === 'admin' || user?.role === 'manager') && usersLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner />
