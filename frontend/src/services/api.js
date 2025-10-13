@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { config as localConfig } from '../config.local';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (window.location.hostname === 'aurora.jguliz.com' ? 'https://aurora.jguliz.com' : 'http://localhost:5000');
+const API_BASE_URL = process.env.REACT_APP_API_URL || localConfig.REACT_APP_API_URL || 
+  (window.location.hostname === 'aurora.jguliz.com' ? 'https://aurora.jguliz.com' : 'http://localhost:5001');
 
 export const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,

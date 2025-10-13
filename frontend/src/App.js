@@ -1,25 +1,25 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useIsAuthenticated } from '@azure/msal-react';
-import { useAuth } from './hooks/useAuth';
-import Layout from './components/Layout';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Users from './pages/Users';
-import UserForm from './pages/UserForm';
-import Roles from './pages/Roles';
-import Profile from './pages/Profile';
-import LoadingSpinner from './components/LoadingSpinner';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./hooks/useAuth";
+import Layout from "./components/Layout";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Users from "./pages/Users";
+import UserForm from "./pages/UserForm";
+import Roles from "./pages/Roles";
+import Profile from "./pages/Profile";
+import LoadingSpinner from "./components/LoadingSpinner";
 
 function App() {
-  const isAuthenticated = useIsAuthenticated();
   const { user, loading } = useAuth();
+
+  console.log("App render - user:", user, "loading:", loading);
 
   if (loading) {
     return <LoadingSpinner />;
   }
 
-  if (!isAuthenticated || !user) {
+  if (!user) {
     return <Login />;
   }
 

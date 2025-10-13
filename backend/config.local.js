@@ -1,0 +1,18 @@
+// Local development configuration
+module.exports = {
+  // Azure App Registration Configuration
+  AZURE_CLIENT_ID: "cad72c8c-cc16-4d72-9455-d710d9e8ca7e",
+  AZURE_CLIENT_SECRET: "eb3d113d-a4a1-4226-8623-b992faa3792f",
+  AZURE_TENANT_ID: "170bbabd-a2f0-4c90-ad4b-0e8f0f0c4259",
+
+  // Database Configuration - Main Database
+  DATABASE_URL:
+    "postgresql://postgres:SD2025COOLGROUP@143.110.148.157:5432/user_management",
+
+  // JWT Secret
+  JWT_SECRET: "your_jwt_secret_key_here_change_this_in_production",
+
+  // Server Configuration
+  NODE_ENV: "development",
+  PORT: 5001,
+};
