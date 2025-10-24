@@ -162,7 +162,7 @@ A modern web-based user management system built with React, Node.js, and Postgre
 ## Team Members
 
 - **Josh Gulizia** - Full-stack development, deployment, and DevOps
-- **Royce Nguyen** - [Role/Contributions]
+- **Royce Nguyen** - Documentation & Deliverables
 - **Alan Escamilla** - [Role/Contributions]
 - **Phuong Ho** - [Role/Contributions]
 
