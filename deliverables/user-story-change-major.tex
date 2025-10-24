@@ -1,22 +1,47 @@
-\documentclass[11pt]{article}
+\documentclass[12pt]{article}
 \usepackage[margin=1in]{geometry}
+\usepackage{parskip}
 \begin{document}
-\title{User Story — Change of Major (v0.2)}
-\author{Team Project}
-\date{\today}
-\maketitle
 
-\section*{User Story}
-\textbf{Title:} Student submits a Change of Major request online.\\
-\textbf{As a} student,\\
-\textbf{I want} to submit a Change of Major request with my personal information and signature so that advisors and department heads can review and sign electronically.\\
-\textbf{Acceptance criteria:}
+\begin{center}
+  \LARGE\textbf{User Stories — Change of Major Workflow (v0.2)}\\[8pt]
+  \large Team Project — User Management System
+\end{center}
+
+\bigskip
+\section*{User Story 1}
+As a \textbf{student}, I want to submit a \emph{Change of Major} form online so that I can request an official change of degree program without paper.
+
+\medskip
+\textbf{Acceptance Criteria:}
 \begin{itemize}
-  \item Student sees their first/last name pre-filled from login.
-  \item Date is auto-filled with the current date.
-  \item Student can upload a signature image or draw their signature.
-  \item Upon submission, a request is stored and routed to the advisor for approval.
-  \item Each approval action saves a timestamped PDF snapshot containing the signatures present at that time.
+  \item Student signs in with Office365.
+  \item Student fields: current major, desired major, student ID auto-filled, date auto-filled.
+  \item Student uploads signature image and submits form.
+  \item System stores request and generates an initial PDF snapshot including the signature.
+\end{itemize}
+
+\bigskip
+\section*{User Story 2}
+As an \textbf{advisor}, I want to review the student request and either approve or return it with comments so that department administrative staff can complete the change.
+
+\medskip
+\textbf{Acceptance Criteria:}
+\begin{itemize}
+  \item Advisor sees all submitted fields and the signature.
+  \item Advisor can Approve or Return with a comment.
+  \item System saves a PDF snapshot of the advisor’s action.
+\end{itemize}
+
+\bigskip
+\section*{User Story 3}
+As a \textbf{department approver}, I want to finalize the approval and have the system produce a final signed PDF that the student can download.
+
+\medskip
+\textbf{Acceptance Criteria:}
+\begin{itemize}
+  \item System produces an archived PDF for each approval step.
+  \item Final state changes to ``approved'' and is viewable by the student.
 \end{itemize}
 
 \end{document}
