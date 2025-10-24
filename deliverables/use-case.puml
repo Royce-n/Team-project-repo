@@ -1,0 +1,14 @@
+@startuml
+left to right direction
+actor Student
+actor Advisor
+actor DeptApprover
+
+Student --> (Submit Change of Major)
+(Submit Change of Major) --> (Auto-fill name & date)
+Advisor --> (Review Request)
+Advisor --> (Approve/Return)
+DeptApprover --> (Finalize Approval)
+Student --> (Download Final PDF)
+
+@enduml
