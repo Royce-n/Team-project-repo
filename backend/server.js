@@ -9,6 +9,10 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const roleRoutes = require('./routes/roles');
+const signatureRoutes = require('./routes/signatures');
+const petitionRoutes = require('./routes/petitions');
+const approvalRoutes = require('./routes/approvals');
+const pdfRoutes = require('./routes/pdfs');
 const { connectDB } = require('./config/database');
 const { errorHandler } = require('./middleware/errorHandler');
 const { authenticateToken } = require('./middleware/auth');
@@ -75,6 +79,10 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authenticateToken, userRoutes);
 app.use('/api/roles', authenticateToken, roleRoutes);
+app.use('/api/signatures', authenticateToken, signatureRoutes);
+app.use('/api/petitions', authenticateToken, petitionRoutes);
+app.use('/api/approvals', authenticateToken, approvalRoutes);
+app.use('/api/pdfs', authenticateToken, pdfRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

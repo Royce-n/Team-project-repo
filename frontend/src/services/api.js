@@ -64,3 +64,6 @@ export const authAPI = {
   getProfile: () => api.get('/auth/profile'),
   logout: () => api.post('/auth/logout'),
 };
+
+// Default export for easier importing
+export default api;

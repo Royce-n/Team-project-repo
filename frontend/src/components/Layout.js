@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { 
-  Users, 
-  Shield, 
-  User, 
-  Menu, 
-  X, 
+import {
+  Users,
+  Shield,
+  User,
+  Menu,
+  X,
   LogOut,
   Home,
-  Settings
+  Settings,
+  FileText,
+  Inbox
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
@@ -19,6 +21,8 @@ const Layout = ({ children }) => {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'My Petitions', href: '/petitions', icon: FileText },
+    { name: 'Approval Queue', href: '/approvals', icon: Inbox, roles: ['admin', 'manager', 'advisor', 'chairperson', 'dean', 'provost'] },
     { name: 'Users', href: '/users', icon: Users, roles: ['admin', 'manager'] },
     { name: 'Roles', href: '/roles', icon: Shield, roles: ['admin'] },
   ];

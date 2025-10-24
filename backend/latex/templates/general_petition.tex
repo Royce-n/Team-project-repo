@@ -1,0 +1,253 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{ifthen}
+
+% Define custom colors
+\definecolor{uhred}{RGB}{200,16,46}
+
+% Header setup
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.5pt}
+\fancyhead[L]{\small GENERAL PETITION}
+\fancyhead[C]{\small University of Houston\\Registration and Academic Records\\(713) 743-1010}
+\fancyhead[R]{\includegraphics[height=0.6in]{uh_logo.png}}
+
+% Footer
+\fancyfoot[C]{\small \thepage}
+
+% Custom commands for form fields
+\newcommand{\formfield}[2]{\textbf{#1:} \underline{\hspace{#2}}}
+\newcommand{\checkbox}[1]{\ensuremath{\square} #1}
+
+\begin{document}
+
+% Disable page numbers on first page
+\thispagestyle{fancy}
+
+% Legal notice
+\begin{small}
+\textit{``State law requires that you be informed of the following: (1) with few exceptions, you are entitled on request to be informed about the information the university collects about you by use of this form; (2) under sections 552.021 and 552.023 of the Government Code, you are entitled to receive and review the information; and (3) under section 559.004 of the Government Code, you are entitled to have the university correct information about you that is incorrect''}
+\end{small}
+
+\vspace{0.2in}
+
+% Student Information Section
+\noindent
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\textbf{Name:} & \underline{{{LAST_NAME}}\hspace{0.5in}{{FIRST_NAME}}\hspace{0.5in}{{MIDDLE_NAME}}\hspace{1in}} \\
+& \small Last \hspace{1.5in} First \hspace{1.5in} Middle \\[0.1in]
+\textbf{My UH\# / HA\#:} & \underline{{{UH_NUMBER}}\hspace{2in}} \textbf{Phone Number:} \underline{{{PHONE_NUMBER}}\hspace{1.5in}} \\[0.1in]
+\textbf{Student Program/Plan} & \underline{{{STUDENT_PROGRAM_PLAN}}\hspace{4in}} \\[0.1in]
+\textbf{Mailing Address:} & \underline{{{MAILING_ADDRESS}}\hspace{4in}} \\[0.1in]
+\textbf{City:} & \underline{{{CITY}}\hspace{1in}} \textbf{State:} \underline{{{STATE}}\hspace{0.5in}} \textbf{ZIP:} \underline{{{ZIP}}\hspace{0.5in}} \textbf{EMAIL:} \underline{{{EMAIL}}\hspace{1in}} \\
+\end{tabularx}
+
+\vspace{0.15in}
+
+% Advisor Section
+\noindent
+\fbox{%
+\begin{minipage}{0.95\textwidth}
+\textbf{To be completed by Advisor}\\[0.05in]
+\textbf{Current} \underline{{{CURRENT_PROGRAM}}\hspace{1.2in}} \textbf{Current} \underline{{{CURRENT_CAREER}}\hspace{1.2in}}\\
+\textbf{Student Program/Plan} \hspace{1in} \textbf{Student Academic Career}\\[0.05in]
+\textbf{Petition Effective} \underline{{{PETITION_EFFECTIVE_BEFORE}}\hspace{2in}}\\
+\hspace*{1.5in} BEFORE first class day Semester/Year\\[0.05in]
+\textbf{Petition Effective} \underline{{{PETITION_EFFECTIVE_AFTER}}\hspace{2in}}\\
+\hspace*{1.5in} AFTER first class day Semester/Year
+\end{minipage}%
+}
+
+\vspace{0.15in}
+
+% Petition Type Selection
+\noindent
+\textbf{Mark number for purpose of petition (For numbers with an "*" complete EXPLANATION OF REQUEST)}
+
+\vspace{0.1in}
+
+\noindent
+\begin{minipage}{0.48\textwidth}
+\small
+{{CHECKBOX_1}} 1. Update Student's Program Status/action
+
+{{CHECKBOX_2}} 2. Admission Status change from \_\_\_\_\_\_\_\_ to \_\_\_\_\_\_\_\_
+
+{{CHECKBOX_3}} 3. Add new career \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+\quad If post baccalaureate, indicate study objective:
+\begin{itemize}
+\item[$\square$] Second bachelor's degree
+\item[$\square$] Requirements for graduate study
+\item[$\square$] Teacher certification
+\item[$\square$] Personal enrichment
+\end{itemize}
+
+{{CHECKBOX_4}} *4. Student request Program Change
+
+\quad from \_\_\_\_\_\_\_\_\_\_\_\_ to \_\_\_\_\_\_\_\_\_\_\_\_
+
+{{CHECKBOX_5}} *5. Student requests plan(major) change
+
+\quad from {{FROM_MAJOR}} to {{TO_MAJOR}}
+
+{{CHECKBOX_6}} *6. Degree objective/plan change (B.A,B.S,B.B.A., etc.)
+
+\quad from \_\_\_\_\_\_\_\_\_\_\_\_ to \_\_\_\_\_\_\_\_\_\_\_\_
+
+{{CHECKBOX_7}} *7. Requirement Term(year) :
+
+\quad UH Catalog/Career \_\_\_\_\_\_\_ Program/Plan \_\_\_\_\_\_\_
+
+{{CHECKBOX_8}} *8. Student Requests Additional Plan
+
+\quad \_\_\_\_\_\_\_\_\_\_\_\_ BA/BS/Other \_\_\_\_\_\_\_\_\_\_\_\_
+
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\small
+{{CHECKBOX_9}} *9. Add second Degree in BA/BS/Other \_\_\_\_\_\_\_
+
+{{CHECKBOX_10}} *10. Student request removal or change of minor
+
+\quad from \_\_\_\_\_\_\_\_\_\_\_\_ to \_\_\_\_\_\_\_\_\_\_\_\_
+
+{{CHECKBOX_11}} *11. Add additional Minor in \_\_\_\_\_\_\_\_\_\_\_\_
+
+{{CHECKBOX_12}} *12. Degree requirement exception
+
+{{CHECKBOX_13}} *13. Special Problems course request
+
+\quad (Indicate course(s), course description and instructor)
+
+{{CHECKBOX_14}} *14. Course overload (indicate G.P.A., number
+
+\quad of hours and courses)
+
+{{CHECKBOX_15}} *15. Graduate studies leave of absence
+
+{{CHECKBOX_16}} *16. Graduate studies reinstatement
+
+{{CHECKBOX_17}} *17. Other
+\end{minipage}
+
+\vspace{0.15in}
+
+% Explanation Section
+\noindent
+\textbf{EXPLANATION OF REQUEST:}
+
+\noindent
+\rule{\textwidth}{0.4pt}
+
+\noindent
+{{EXPLANATION_LINE_1}}
+
+\noindent
+\rule{\textwidth}{0.4pt}
+
+\noindent
+{{EXPLANATION_LINE_2}}
+
+\noindent
+\rule{\textwidth}{0.4pt}
+
+\noindent
+{{EXPLANATION_LINE_3}}
+
+\noindent
+\rule{\textwidth}{0.4pt}
+
+\vspace{0.15in}
+
+% Student Signature
+\noindent
+\textbf{Signature of Student} \underline{\hspace{3in}} \textbf{Date} \underline{{{SUBMISSION_DATE}}\hspace{1in}}
+
+\vspace{0.15in}
+
+% Academic Office Use Only
+\noindent
+\textbf{\large ACADEMIC OFFICE USE ONLY}
+
+\vspace{0.1in}
+
+% Approval Signatures
+\noindent
+\begin{tabular}{@{}p{0.1in}p{1.2in}p{2in}p{2in}p{1in}p{1.5in}@{}}
+{{ADVISOR_APPROVED}} & Approved & \multicolumn{2}{l}{{\small Advisor/Instructor}} & & \\
+{{ADVISOR_DISAPPROVED}} & Disapproved &
+\ifthenelse{\equal{{{HAS_ADVISOR_SIGNATURE}}}{true}}{%
+\raisebox{-0.3in}{\includegraphics[height=0.5in,keepaspectratio]{{{ADVISOR_SIGNATURE_PATH}}}}%
+}{%
+\underline{\hspace{2in}}%
+} &
+\underline{{{ADVISOR_NAME}}\hspace{2in}} & \underline{{{ADVISOR_DATE}}\hspace{1in}} \\
+& & Signature & Print name & Date & \\[0.2in]
+
+{{CHAIR_APPROVED}} & Approved & \multicolumn{2}{l}{{\small Chairperson}} & & \\
+{{CHAIR_DISAPPROVED}} & Disapproved &
+\ifthenelse{\equal{{{HAS_CHAIR_SIGNATURE}}}{true}}{%
+\raisebox{-0.3in}{\includegraphics[height=0.5in,keepaspectratio]{{{CHAIR_SIGNATURE_PATH}}}}%
+}{%
+\underline{\hspace{2in}}%
+} &
+\underline{{{CHAIR_NAME}}\hspace{2in}} & \underline{{{CHAIR_DATE}}\hspace{1in}} \\
+& & Signature & Print name & Date & \\[0.2in]
+
+{{DEAN_APPROVED}} & Approved & \multicolumn{2}{l}{{\small College Dean}} & & \\
+{{DEAN_DISAPPROVED}} & Disapproved &
+\ifthenelse{\equal{{{HAS_DEAN_SIGNATURE}}}{true}}{%
+\raisebox{-0.3in}{\includegraphics[height=0.5in,keepaspectratio]{{{DEAN_SIGNATURE_PATH}}}}%
+}{%
+\underline{\hspace{2in}}%
+} &
+\underline{{{DEAN_NAME}}\hspace{2in}} & \underline{{{DEAN_DATE}}\hspace{1in}} \\
+& & Signature & Print name & Date & \\[0.2in]
+
+{{PROVOST_APPROVED}} & Approved & \multicolumn{2}{l}{{\small Sr. Vice President/Provost}} & & \\
+{{PROVOST_DISAPPROVED}} & Disapproved &
+\ifthenelse{\equal{{{HAS_PROVOST_SIGNATURE}}}{true}}{%
+\raisebox{-0.3in}{\includegraphics[height=0.5in,keepaspectratio]{{{PROVOST_SIGNATURE_PATH}}}}%
+}{%
+\underline{\hspace{2in}}%
+} &
+\underline{{{PROVOST_NAME}}\hspace{2in}} & \underline{{{PROVOST_DATE}}\hspace{1in}} \\
+& & Signature & Print name & Date & \\
+& & \multicolumn{3}{l}{\small (General degree requirement exception only)} & \\
+\end{tabular}
+
+\vspace{0.1in}
+
+% Comments Section
+\noindent
+\fbox{%
+\begin{minipage}{0.95\textwidth}
+\textbf{Comments}\\[0.05in]
+\rule{\textwidth}{0.4pt}\\[0.05in]
+{{COMMENTS_LINE_1}}\\
+\rule{\textwidth}{0.4pt}\\[0.05in]
+{{COMMENTS_LINE_2}}\\
+\rule{\textwidth}{0.4pt}\\[0.05in]
+{{COMMENTS_LINE_3}}\\
+\rule{\textwidth}{0.4pt}
+\end{minipage}%
+}
+
+\vspace{0.2in}
+
+% Request Number and Generation Info
+\noindent
+\begin{small}
+\textbf{Request Number:} {{REQUEST_NUMBER}} \hfill \textbf{Generated:} {{GENERATION_DATE}}
+\end{small}
+
+\end{document}

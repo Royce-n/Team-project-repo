@@ -1,6 +1,20 @@
-# User Management System
+# User Management & Approval System
 
-A modern web-based user management system built with React, Node.js, and PostgreSQL, featuring Office365 authentication and role-based access control. **Live at: https://aurora.jguliz.com**
+A modern web-based user management and petition approval system built with React, Node.js, and PostgreSQL, featuring Office365 authentication, role-based access control, and automated PDF generation. **Live at: https://aurora.jguliz.com**
+
+## New: Approval System
+
+This system now includes a comprehensive approval workflow for University of Houston General Petitions, starting with the **Change of Major** petition. Features include:
+
+- ✅ **Electronic Signature Management** - Upload and manage digital signatures
+- ✅ **Multi-step Approval Workflow** - Advisor → Chairperson → Dean → Provost
+- ✅ **Automated PDF Generation** - LaTeX-based PDF creation with embedded signatures
+- ✅ **Petition Tracking** - Real-time status tracking and progress monitoring
+- ✅ **Approval Queue** - Dedicated interface for approvers to manage pending requests
+- ✅ **Audit Logging** - Complete history of all actions and state changes
+- ✅ **Versioned PDFs** - Store PDF snapshots at each approval step
+
+See [APPROVAL_SYSTEM.md](./APPROVAL_SYSTEM.md) for detailed documentation.
 
 ## Live Application
 

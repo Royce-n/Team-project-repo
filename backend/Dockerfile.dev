@@ -2,17 +2,9 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Install LaTeX and required packages for PDF generation
-# This will take 5-10 minutes on first build (~500MB download)
-RUN apk add --no-cache \
-    texlive \
-    texmf-dist-most \
-    make
-
-# Install additional LaTeX packages needed for the template
-RUN apk add --no-cache \
-    texmf-dist-fontsextra \
-    texmf-dist-pictures
+# Skip LaTeX for faster development builds
+# PDF generation will be disabled
+RUN apk add --no-cache make
 
 # Copy package files
 COPY package*.json ./
