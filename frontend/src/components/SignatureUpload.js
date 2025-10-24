@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, X, Check, Loader2 } from 'lucide-react';
+import { Upload, X, Check, Loader2, Edit3 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import SignatureCanvas from './SignatureCanvas';
 
 const SignatureUpload = ({ onSignatureUploaded, existingSignature }) => {
   const [signature, setSignature] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showCanvas, setShowCanvas] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -196,15 +198,33 @@ const SignatureUpload = ({ onSignatureUploaded, existingSignature }) => {
               </div>
             )}
           </div>
+        ) : showCanvas ? (
+          <SignatureCanvas
+            onSave={(data) => {
+              uploadSignature(data.imageData, data.imageFormat);
+              setShowCanvas(false);
+            }}
+            onCancel={() => setShowCanvas(false)}
+          />
         ) : (
           <div className="text-center">
             <Upload className="mx-auto h-12 w-12 text-gray-400" />
-            <div className="mt-4">
+            <div className="mt-4 space-y-2">
+              <button
+                type="button"
+                onClick={() => setShowCanvas(true)}
+                disabled={uploading}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              >
+                <Edit3 className="w-4 h-4 mr-2" />
+                Create Signature
+              </button>
+              <div className="text-sm text-gray-500">or</div>
               <button
                 type="button"
                 onClick={handleUploadClick}
                 disabled={uploading}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
                 {uploading ? (
                   <>
@@ -214,13 +234,13 @@ const SignatureUpload = ({ onSignatureUploaded, existingSignature }) => {
                 ) : (
                   <>
                     <Upload className="w-4 h-4 mr-2" />
-                    Upload Signature
+                    Upload Image
                   </>
                 )}
               </button>
             </div>
             <p className="mt-2 text-xs text-gray-500">
-              PNG, JPG, or SVG up to 2MB
+              Draw, type your name, or upload PNG/JPG (max 2MB)
             </p>
           </div>
         )}
