@@ -608,6 +608,7 @@ router.get('/my-queue', authenticateToken, async (req, res, next) => {
         pr.*,
         pt.type_name,
         pt.type_number,
+        pt.approval_chain,
         u.name as student_name,
         u.email as student_email,
         ast.step_order,

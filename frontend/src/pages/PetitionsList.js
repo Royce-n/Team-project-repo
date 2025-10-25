@@ -330,7 +330,7 @@ const PetitionsList = () => {
                     )}
                   </div>
 
-                  {petition.current_approval_step > 0 && (
+                  {petition.current_approval_step > 0 && petition.approval_chain && (
                     <div className="mt-2">
                       <div className="flex items-center gap-2">
                         <div className="flex-1 bg-gray-200 rounded-full h-2">
@@ -338,13 +338,13 @@ const PetitionsList = () => {
                             className="bg-blue-600 h-2 rounded-full transition-all"
                             style={{
                               width: `${
-                                (petition.current_approval_step / 4) * 100
+                                (petition.current_approval_step / (Array.isArray(petition.approval_chain) ? petition.approval_chain.length : JSON.parse(petition.approval_chain).length)) * 100
                               }%`,
                             }}
                           />
                         </div>
                         <span className="text-xs text-gray-600">
-                          Step {petition.current_approval_step} of 4
+                          Step {petition.current_approval_step} of {Array.isArray(petition.approval_chain) ? petition.approval_chain.length : JSON.parse(petition.approval_chain).length}
                         </span>
                       </div>
                     </div>

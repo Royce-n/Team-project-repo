@@ -149,6 +149,7 @@ router.get(
           pr.*,
           pt.type_name,
           pt.type_number,
+          pt.approval_chain,
           u.name as student_name,
           u.email as student_email,
           COUNT(*) OVER() as total_count

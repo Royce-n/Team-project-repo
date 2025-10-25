@@ -161,21 +161,23 @@ const ApprovalQueue = () => {
                     </span>
                   </div>
 
-                  <div className="mt-2">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full transition-all"
-                          style={{
-                            width: `${(petition.step_order / 4) * 100}%`,
-                          }}
-                        />
+                  {petition.approval_chain && (
+                    <div className="mt-2">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-blue-600 h-2 rounded-full transition-all"
+                            style={{
+                              width: `${(petition.step_order / (Array.isArray(petition.approval_chain) ? petition.approval_chain.length : JSON.parse(petition.approval_chain).length)) * 100}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-600 whitespace-nowrap">
+                          Step {petition.step_order} of {Array.isArray(petition.approval_chain) ? petition.approval_chain.length : JSON.parse(petition.approval_chain).length}
+                        </span>
                       </div>
-                      <span className="text-xs text-gray-600 whitespace-nowrap">
-                        Step {petition.step_order} of 4
-                      </span>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 <div className="ml-4">
