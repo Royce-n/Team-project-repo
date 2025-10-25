@@ -3,6 +3,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { query } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
+const { generatePetitionPDF } = require('../services/pdfGenerator');
 
 /**
  * Helper function to check if user is an approver for a specific role
@@ -179,6 +180,15 @@ router.post(
         );
 
         await query('COMMIT');
+
+        // Generate PDF with updated signatures after approval
+        try {
+          await generatePetitionPDF(petitionId);
+          console.log(`PDF generated for petition ${petitionId} after approval at step ${currentStep}`);
+        } catch (pdfError) {
+          console.error(`Error generating PDF for petition ${petitionId}:`, pdfError);
+          // Don't fail the approval if PDF generation fails
+        }
 
         res.json({
           success: true,

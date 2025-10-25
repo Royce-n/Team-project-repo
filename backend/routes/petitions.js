@@ -3,6 +3,7 @@ const router = express.Router();
 const { body, query: queryValidator, param, validationResult } = require('express-validator');
 const { query } = require('../config/database');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const { generatePetitionPDF } = require('../services/pdfGenerator');
 
 /**
  * @route   POST /api/petitions
@@ -505,6 +506,15 @@ router.post('/:id/submit', authenticateToken, async (req, res, next) => {
       );
 
       await query('COMMIT');
+
+      // Generate initial PDF after successful submission
+      try {
+        await generatePetitionPDF(id);
+        console.log(`PDF generated for petition ${id}`);
+      } catch (pdfError) {
+        console.error(`Error generating PDF for petition ${id}:`, pdfError);
+        // Don't fail the submission if PDF generation fails
+      }
 
       res.json({
         success: true,
