@@ -66,23 +66,50 @@ router.post(
       await query('BEGIN');
 
       try {
-        // Deactivate all existing approver role assignments for this user
-        await query(
-          `UPDATE approver_assignments
-           SET is_active = FALSE
-           WHERE user_id = $1`,
+        // First, get all existing approver roles for this user
+        const existingRoles = await query(
+          `SELECT approver_role FROM approver_assignments
+           WHERE user_id = $1 AND is_active = TRUE`,
           [userId]
         );
+        const existingRoleNames = existingRoles.rows.map(r => r.approver_role);
 
-        // Insert new approver role assignments
-        for (const role of roles) {
+        // Deactivate roles that are no longer selected
+        const rolesToDeactivate = existingRoleNames.filter(r => !roles.includes(r));
+        for (const role of rolesToDeactivate) {
           await query(
-            `INSERT INTO approver_assignments (user_id, approver_role, department, is_active)
-             VALUES ($1, $2, $3, TRUE)
-             ON CONFLICT (user_id, approver_role) WHERE is_active = TRUE
-             DO UPDATE SET department = $3, is_active = TRUE`,
-            [userId, role, department || null]
+            `UPDATE approver_assignments
+             SET is_active = FALSE
+             WHERE user_id = $1 AND approver_role = $2`,
+            [userId, role]
           );
+        }
+
+        // Insert or update selected roles
+        for (const role of roles) {
+          // Check if this role already exists (active or inactive)
+          const existing = await query(
+            `SELECT id FROM approver_assignments
+             WHERE user_id = $1 AND approver_role = $2`,
+            [userId, role]
+          );
+
+          if (existing.rows.length > 0) {
+            // Update existing assignment
+            await query(
+              `UPDATE approver_assignments
+               SET is_active = TRUE, department = $3
+               WHERE user_id = $1 AND approver_role = $2`,
+              [userId, role, department || null]
+            );
+          } else {
+            // Insert new assignment
+            await query(
+              `INSERT INTO approver_assignments (user_id, approver_role, department, is_active)
+               VALUES ($1, $2, $3, TRUE)`,
+              [userId, role, department || null]
+            );
+          }
         }
 
         await query('COMMIT');

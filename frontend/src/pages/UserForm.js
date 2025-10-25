@@ -49,15 +49,25 @@ const UserForm = () => {
   useEffect(() => {
     if (isEdit && id) {
       api.get(`/users/${id}/approver-roles`).then(response => {
-        if (response.data.success && response.data.data.length > 0) {
-          const roles = {};
-          response.data.data.forEach(assignment => {
-            roles[assignment.approver_role] = true;
-            if (assignment.department) {
-              setApproverDepartment(assignment.department);
-            }
-          });
+        console.log('Fetched approver roles:', response.data);
+        if (response.data.success) {
+          const roles = {
+            advisor: false,
+            chairperson: false,
+            dean: false,
+            provost: false
+          };
+
+          if (response.data.data.length > 0) {
+            response.data.data.forEach(assignment => {
+              roles[assignment.approver_role] = true;
+              if (assignment.department) {
+                setApproverDepartment(assignment.department);
+              }
+            });
+          }
           setApproverRoles(roles);
+          console.log('Set approver roles:', roles);
         }
       }).catch(error => {
         console.error('Error fetching approver roles:', error);
@@ -105,11 +115,20 @@ const UserForm = () => {
 
       // Save approver role assignments
       const selectedRoles = Object.keys(approverRoles).filter(role => approverRoles[role]);
-      if (selectedRoles.length > 0 && isEdit) {
-        await api.post(`/users/${id}/approver-roles`, {
-          roles: selectedRoles,
-          department: approverDepartment || null
-        });
+      if (isEdit) {
+        try {
+          const response = await api.post(`/users/${id}/approver-roles`, {
+            roles: selectedRoles,
+            department: approverDepartment || null
+          });
+          console.log('Saved approver roles:', response.data);
+          if (response.data.success) {
+            toast.success('Approver roles updated successfully');
+          }
+        } catch (roleError) {
+          console.error('Error saving approver roles:', roleError);
+          toast.error('Failed to update approver roles');
+        }
       }
     } catch (error) {
       console.error('Error saving user:', error);
