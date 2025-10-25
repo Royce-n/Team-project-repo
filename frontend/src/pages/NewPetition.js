@@ -128,22 +128,25 @@ const NewPetition = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#C8102E' }} />
       </div>
     );
   }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-          <FileText className="w-8 h-8 mr-2 text-blue-600" />
-          New Petition Request
-        </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Complete the form below to submit a petition request. Fields marked
-          with * are required.
-        </p>
+      <div className="mb-6 flex items-center gap-4">
+        <img src="/uh_logo.png" alt="University of Houston" className="h-16 w-auto" />
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+            <FileText className="w-8 h-8 mr-2" style={{ color: '#C8102E' }} />
+            New Petition Request
+          </h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Complete the form below to submit a petition request. Fields marked
+            with * are required.
+          </p>
+        </div>
       </div>
 
       <form className="space-y-6">
@@ -396,7 +399,8 @@ const NewPetition = () => {
             type="button"
             onClick={handleSubmit((data) => onSubmit(data, false))}
             disabled={saving || !hasSignature}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="flex items-center px-4 py-2 text-white rounded-md hover:opacity-90 disabled:opacity-50"
+            style={{ backgroundColor: '#C8102E' }}
           >
             <Send className="w-4 h-4 mr-2" />
             {saving ? 'Submitting...' : 'Submit Petition'}

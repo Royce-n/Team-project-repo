@@ -164,28 +164,32 @@ const PetitionsList = () => {
   if (loading && petitions.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#C8102E' }} />
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      {/* Header */}
+      {/* Header with UH Logo */}
       <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-            <FileText className="w-8 h-8 mr-2 text-blue-600" />
-            My Petitions
-          </h1>
-          <p className="mt-1 text-sm text-gray-600">
-            View and track your petition requests
-          </p>
+        <div className="flex items-center gap-4">
+          <img src="/uh_logo.png" alt="University of Houston" className="h-16 w-auto" />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+              <FileText className="w-8 h-8 mr-2" style={{ color: '#C8102E' }} />
+              My Petitions
+            </h1>
+            <p className="mt-1 text-sm text-gray-600">
+              View and track your petition requests
+            </p>
+          </div>
         </div>
 
         <Link
           to="/petitions/new"
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="inline-flex items-center px-4 py-2 text-white rounded-md hover:opacity-90"
+          style={{ backgroundColor: '#C8102E' }}
         >
           <Plus className="w-5 h-5 mr-2" />
           New Petition
@@ -199,9 +203,10 @@ const PetitionsList = () => {
             onClick={() => setFilter('all')}
             className={`px-4 py-2 rounded-md text-sm font-medium ${
               filter === 'all'
-                ? 'bg-blue-100 text-blue-700'
+                ? 'text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
+            style={filter === 'all' ? { backgroundColor: '#C8102E' } : {}}
           >
             All
           </button>
@@ -209,9 +214,10 @@ const PetitionsList = () => {
             onClick={() => setFilter('draft')}
             className={`px-4 py-2 rounded-md text-sm font-medium ${
               filter === 'draft'
-                ? 'bg-blue-100 text-blue-700'
+                ? 'text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
+            style={filter === 'draft' ? { backgroundColor: '#C8102E' } : {}}
           >
             Drafts
           </button>
@@ -219,9 +225,10 @@ const PetitionsList = () => {
             onClick={() => setFilter('submitted')}
             className={`px-4 py-2 rounded-md text-sm font-medium ${
               filter === 'submitted'
-                ? 'bg-blue-100 text-blue-700'
+                ? 'text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
+            style={filter === 'submitted' ? { backgroundColor: '#C8102E' } : {}}
           >
             Submitted
           </button>
@@ -229,9 +236,10 @@ const PetitionsList = () => {
             onClick={() => setFilter('pending')}
             className={`px-4 py-2 rounded-md text-sm font-medium ${
               filter === 'pending'
-                ? 'bg-blue-100 text-blue-700'
+                ? 'text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
+            style={filter === 'pending' ? { backgroundColor: '#C8102E' } : {}}
           >
             Pending
           </button>
@@ -239,9 +247,10 @@ const PetitionsList = () => {
             onClick={() => setFilter('approved')}
             className={`px-4 py-2 rounded-md text-sm font-medium ${
               filter === 'approved'
-                ? 'bg-blue-100 text-blue-700'
+                ? 'text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
+            style={filter === 'approved' ? { backgroundColor: '#C8102E' } : {}}
           >
             Approved
           </button>
@@ -249,9 +258,10 @@ const PetitionsList = () => {
             onClick={() => setFilter('rejected')}
             className={`px-4 py-2 rounded-md text-sm font-medium ${
               filter === 'rejected'
-                ? 'bg-blue-100 text-blue-700'
+                ? 'text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
+            style={filter === 'rejected' ? { backgroundColor: '#C8102E' } : {}}
           >
             Rejected
           </button>
@@ -259,9 +269,10 @@ const PetitionsList = () => {
             onClick={() => setFilter('returned')}
             className={`px-4 py-2 rounded-md text-sm font-medium ${
               filter === 'returned'
-                ? 'bg-blue-100 text-blue-700'
+                ? 'text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
+            style={filter === 'returned' ? { backgroundColor: '#C8102E' } : {}}
           >
             Returned
           </button>
@@ -335,11 +346,12 @@ const PetitionsList = () => {
                       <div className="flex items-center gap-2">
                         <div className="flex-1 bg-gray-200 rounded-full h-2">
                           <div
-                            className="bg-blue-600 h-2 rounded-full transition-all"
+                            className="h-2 rounded-full transition-all"
                             style={{
                               width: `${
                                 (petition.current_approval_step / (Array.isArray(petition.approval_chain) ? petition.approval_chain.length : JSON.parse(petition.approval_chain).length)) * 100
                               }%`,
+                              backgroundColor: '#C8102E'
                             }}
                           />
                         </div>
@@ -356,7 +368,8 @@ const PetitionsList = () => {
                   {petition.status === 'draft' && (
                     <button
                       onClick={() => navigate(`/petitions/${petition.id}/edit`)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-md"
+                      className="p-2 hover:bg-red-50 rounded-md"
+                      style={{ color: '#C8102E' }}
                       title="Edit Draft"
                     >
                       <Edit className="w-5 h-5" />
