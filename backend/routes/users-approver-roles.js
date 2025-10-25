@@ -20,10 +20,10 @@ router.get(
       const { userId } = req.params;
 
       const result = await query(
-        `SELECT id, approver_role, department, is_active, created_at
+        `SELECT id, approver_role, department, is_active, assigned_at
          FROM approver_assignments
          WHERE user_id = $1 AND is_active = TRUE
-         ORDER BY created_at DESC`,
+         ORDER BY assigned_at DESC`,
         [userId]
       );
 
