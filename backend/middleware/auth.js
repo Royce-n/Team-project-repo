@@ -56,19 +56,23 @@ const authenticateToken = async (req, res, next) => {
 
 const requireRole = (roles) => {
   return (req, res, next) => {
+    console.log('[requireRole] Checking role access. Required:', roles, 'User:', req.user?.role);
     if (!req.user) {
+      console.error('[requireRole] No user in request');
       return res.status(401).json({ error: 'Authentication required' });
     }
 
     const userRole = req.user.role;
     if (!roles.includes(userRole)) {
-      return res.status(403).json({ 
+      console.error('[requireRole] Access denied. Required:', roles, 'Current:', userRole);
+      return res.status(403).json({
         error: 'Insufficient permissions',
         required: roles,
         current: userRole
       });
     }
 
+    console.log('[requireRole] Access granted');
     next();
   };
 };

@@ -15,6 +15,8 @@ router.get(
   requireRole(['admin']),
   async (req, res, next) => {
     try {
+      console.log('[GET approver-roles] Request received for userId:', req.params.userId);
+      console.log('[GET approver-roles] User role:', req.user?.role);
       const { userId } = req.params;
 
       const result = await query(
@@ -25,11 +27,13 @@ router.get(
         [userId]
       );
 
+      console.log('[GET approver-roles] Found roles:', result.rows);
       res.json({
         success: true,
         data: result.rows,
       });
     } catch (error) {
+      console.error('[GET approver-roles] Error:', error);
       next(error);
     }
   }
@@ -51,8 +55,13 @@ router.post(
   ],
   async (req, res, next) => {
     try {
+      console.log('[POST approver-roles] Request received for userId:', req.params.userId);
+      console.log('[POST approver-roles] User role:', req.user?.role);
+      console.log('[POST approver-roles] Request body:', req.body);
+
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.error('[POST approver-roles] Validation errors:', errors.array());
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
@@ -114,15 +123,18 @@ router.post(
 
         await query('COMMIT');
 
+        console.log('[POST approver-roles] Roles updated successfully');
         res.json({
           success: true,
           message: 'Approver roles updated successfully',
         });
       } catch (error) {
+        console.error('[POST approver-roles] Transaction error:', error);
         await query('ROLLBACK');
         throw error;
       }
     } catch (error) {
+      console.error('[POST approver-roles] Error:', error);
       next(error);
     }
   }
