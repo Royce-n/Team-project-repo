@@ -223,9 +223,16 @@ async function generatePetitionPDF(petitionId) {
 
   // Process each approval role
   const roles = ['advisor', 'chairperson', 'dean', 'provost'];
+  const roleMapping = {
+    advisor: 'ADVISOR',
+    chairperson: 'CHAIR',
+    dean: 'DEAN',
+    provost: 'PROVOST'
+  };
+
   for (const role of roles) {
     const step = approvalSteps[role];
-    const roleUpper = role.toUpperCase();
+    const roleUpper = roleMapping[role];
 
     if (step && step.status === 'approved') {
       replacements[`${roleUpper}_APPROVED`] = '$\\boxtimes$';
