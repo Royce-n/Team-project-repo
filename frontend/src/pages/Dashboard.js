@@ -53,29 +53,29 @@ const Dashboard = () => {
       name: 'Total Users',
       value: totalUsers,
       icon: Users,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100'
+      color: '#C8102E',
+      bgColor: 'rgba(200, 16, 46, 0.1)'
     },
     {
       name: 'Active Users',
       value: activeUsers,
       icon: UserCheck,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100'
+      color: '#C8102E',
+      bgColor: 'rgba(200, 16, 46, 0.1)'
     },
     {
       name: 'Inactive Users',
       value: inactiveUsers,
       icon: UserX,
-      color: 'text-red-600',
-      bgColor: 'bg-red-100'
+      color: '#C8102E',
+      bgColor: 'rgba(200, 16, 46, 0.1)'
     },
     {
       name: 'Online Now',
       value: usersActivity.filter(u => u.status_text === 'Online').length,
       icon: Shield,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100'
+      color: '#C8102E',
+      bgColor: 'rgba(200, 16, 46, 0.1)'
     }
   ];
 
@@ -117,12 +117,12 @@ const Dashboard = () => {
 
         {/* Basic User Stats */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-white overflow-hidden shadow-lg rounded-lg border-2" style={{ borderColor: '#C8102E', backgroundColor: 'rgba(200, 16, 46, 0.02)' }}>
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="p-3 rounded-md bg-blue-100">
-                    <Users className="h-6 w-6 text-blue-600" />
+                  <div className="p-3 rounded-md" style={{ backgroundColor: 'rgba(200, 16, 46, 0.1)' }}>
+                    <Users className="h-6 w-6" style={{ color: '#C8102E' }} />
                   </div>
                 </div>
                 <div className="ml-5 w-0 flex-1">
@@ -139,12 +139,12 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-white overflow-hidden shadow-lg rounded-lg border-2" style={{ borderColor: '#C8102E', backgroundColor: 'rgba(200, 16, 46, 0.02)' }}>
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="p-3 rounded-md bg-green-100">
-                    <UserCheck className="h-6 w-6 text-green-600" />
+                  <div className="p-3 rounded-md" style={{ backgroundColor: 'rgba(200, 16, 46, 0.1)' }}>
+                    <UserCheck className="h-6 w-6" style={{ color: '#C8102E' }} />
                   </div>
                 </div>
                 <div className="ml-5 w-0 flex-1">
@@ -161,12 +161,12 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-white overflow-hidden shadow-lg rounded-lg border-2" style={{ borderColor: '#C8102E', backgroundColor: 'rgba(200, 16, 46, 0.02)' }}>
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="p-3 rounded-md bg-purple-100">
-                    <Shield className="h-6 w-6 text-purple-600" />
+                  <div className="p-3 rounded-md" style={{ backgroundColor: 'rgba(200, 16, 46, 0.1)' }}>
+                    <Shield className="h-6 w-6" style={{ color: '#C8102E' }} />
                   </div>
                 </div>
                 <div className="ml-5 w-0 flex-1">
@@ -193,7 +193,8 @@ const Dashboard = () => {
             <div className="mt-5 space-y-3">
               <a
                 href="/profile"
-                className="block w-full bg-primary-50 border border-primary-200 rounded-md py-2 px-4 text-sm font-medium text-primary-700 hover:bg-primary-100 text-center"
+                className="block w-full border-2 rounded-md py-2 px-4 text-sm font-medium text-center hover:opacity-90"
+                style={{ borderColor: '#C8102E', backgroundColor: 'rgba(200, 16, 46, 0.1)', color: '#C8102E' }}
               >
                 View Profile
               </a>
@@ -241,12 +242,12 @@ const Dashboard = () => {
       {/* Stats Grid - Only for admin/manager */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <div key={stat.name} className="bg-white overflow-hidden shadow rounded-lg">
+          <div key={stat.name} className="bg-white overflow-hidden shadow-lg rounded-lg border-2" style={{ borderColor: '#C8102E', backgroundColor: 'rgba(200, 16, 46, 0.02)' }}>
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className={`p-3 rounded-md ${stat.bgColor}`}>
-                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                  <div className="p-3 rounded-md" style={{ backgroundColor: stat.bgColor }}>
+                    <stat.icon className="h-6 w-6" style={{ color: stat.color }} />
                   </div>
                 </div>
                 <div className="ml-5 w-0 flex-1">
@@ -349,7 +350,8 @@ const Dashboard = () => {
               {(user?.role === 'admin' || user?.role === 'manager') && (
                 <a
                   href="/users"
-                  className="block w-full bg-primary-50 border border-primary-200 rounded-md py-2 px-4 text-sm font-medium text-primary-700 hover:bg-primary-100 text-center"
+                  className="block w-full border-2 rounded-md py-2 px-4 text-sm font-medium text-center hover:opacity-90"
+                  style={{ borderColor: '#C8102E', backgroundColor: 'rgba(200, 16, 46, 0.1)', color: '#C8102E' }}
                 >
                   Manage Users
                 </a>
@@ -357,14 +359,16 @@ const Dashboard = () => {
               {(user?.role === 'admin') && (
                 <a
                   href="/roles"
-                  className="block w-full bg-gray-50 border border-gray-200 rounded-md py-2 px-4 text-sm font-medium text-gray-700 hover:bg-gray-100 text-center"
+                  className="block w-full border-2 rounded-md py-2 px-4 text-sm font-medium text-center hover:opacity-90"
+                  style={{ borderColor: '#C8102E', backgroundColor: 'rgba(200, 16, 46, 0.1)', color: '#C8102E' }}
                 >
                   Manage Roles
                 </a>
               )}
               <a
                 href="/profile"
-                className="block w-full bg-gray-50 border border-gray-200 rounded-md py-2 px-4 text-sm font-medium text-gray-700 hover:bg-gray-100 text-center"
+                className="block w-full border-2 rounded-md py-2 px-4 text-sm font-medium text-center hover:opacity-90"
+                style={{ borderColor: '#C8102E', backgroundColor: 'rgba(200, 16, 46, 0.1)', color: '#C8102E' }}
               >
                 View Profile
               </a>

@@ -54,15 +54,16 @@ const Login = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary-100">
-            <Users className="h-6 w-6 text-primary-600" />
-          </div>
+          <img src="/uh_logo.png" alt="University of Houston" className="mx-auto h-24 w-auto" />
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            User Management System
+            University of Houston
           </h2>
+          <h3 className="mt-2 text-xl font-semibold" style={{ color: '#C8102E' }}>
+            General Petition System
+          </h3>
           <p className="mt-2 text-sm text-gray-600">
             Sign in with your Office365 account to continue
           </p>
@@ -70,12 +71,13 @@ const Login = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 border-2" style={{ borderColor: '#C8102E', backgroundColor: 'rgba(200, 16, 46, 0.02)' }}>
           <div className="space-y-4">
             <button
               onClick={handleLogin}
               disabled={isLoggingIn || loading}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center items-center py-3 px-4 border-2 rounded-md shadow-sm text-sm font-medium text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#C8102E', borderColor: '#C8102E' }}
             >
               {isLoggingIn || loading ? (
                 <LoadingSpinner size="small" className="mr-2" />
@@ -133,7 +135,7 @@ const Login = () => {
               {features.map((feature, index) => (
                 <div key={index} className="flex items-start">
                   <div className="flex-shrink-0">
-                    <feature.icon className="h-6 w-6 text-primary-600" />
+                    <feature.icon className="h-6 w-6" style={{ color: '#C8102E' }} />
                   </div>
                   <div className="ml-3">
                     <h3 className="text-sm font-medium text-gray-900">

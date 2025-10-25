@@ -138,8 +138,7 @@ const NewPetition = () => {
       <div className="mb-6 flex items-center gap-4">
         <img src="/uh_logo.png" alt="University of Houston" className="h-16 w-auto" />
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-            <FileText className="w-8 h-8 mr-2" style={{ color: '#C8102E' }} />
+          <h1 className="text-2xl font-bold text-gray-900">
             New Petition Request
           </h1>
           <p className="mt-2 text-sm text-gray-600">

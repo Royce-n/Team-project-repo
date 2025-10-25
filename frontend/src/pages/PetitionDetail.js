@@ -142,7 +142,7 @@ const PetitionDetail = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#C8102E' }} />
       </div>
     );
   }
@@ -150,8 +150,8 @@ const PetitionDetail = () => {
   if (!petition) {
     return (
       <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">Petition not found</p>
+        <div className="border-2 rounded-lg p-4" style={{ borderColor: '#C8102E', backgroundColor: 'rgba(200, 16, 46, 0.1)' }}>
+          <p style={{ color: '#C8102E' }}>Petition not found</p>
         </div>
       </div>
     );
@@ -167,32 +167,36 @@ const PetitionDetail = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      {/* Header */}
+      {/* Header with UH Logo */}
       <div className="mb-6">
         <button
           onClick={() => navigate('/petitions')}
-          className="flex items-center text-blue-600 hover:text-blue-700 mb-4"
+          className="flex items-center hover:opacity-70 mb-4"
+          style={{ color: '#C8102E' }}
         >
           <ArrowLeft className="w-4 h-4 mr-1" />
           Back to Petitions
         </button>
 
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-              <FileText className="w-8 h-8 mr-2 text-blue-600" />
-              {petition.request_number}
-            </h1>
-            <p className="mt-1 text-sm text-gray-600">
-              {petition.type_number}. {petition.type_name}
-            </p>
+          <div className="flex items-center gap-4">
+            <img src="/uh_logo.png" alt="University of Houston" className="h-16 w-auto" />
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {petition.request_number}
+              </h1>
+              <p className="mt-1 text-sm text-gray-600">
+                {petition.type_number}. {petition.type_name}
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
             {storedPdfs.length > 0 && (
               <button
                 onClick={() => handleDownloadPDF()}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                className="flex items-center px-4 py-2 text-white rounded-md hover:opacity-90"
+                style={{ backgroundColor: '#C8102E' }}
               >
                 <Download className="w-4 h-4 mr-2" />
                 Download PDF
@@ -203,7 +207,8 @@ const PetitionDetail = () => {
               <button
                 onClick={handleResubmit}
                 disabled={actionLoading}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                className="flex items-center px-4 py-2 text-white rounded-md hover:opacity-90 disabled:opacity-50"
+                style={{ backgroundColor: '#C8102E' }}
               >
                 <Send className="w-4 h-4 mr-2" />
                 {actionLoading ? 'Resubmitting...' : 'Resubmit'}
@@ -214,7 +219,7 @@ const PetitionDetail = () => {
       </div>
 
       {/* Status and Progress */}
-      <div className="bg-white shadow rounded-lg p-6 mb-6">
+      <div className="bg-white shadow-lg rounded-lg p-6 mb-6 border-2" style={{ borderColor: '#C8102E', backgroundColor: 'rgba(200, 16, 46, 0.02)' }}>
         <h2 className="text-lg font-semibold mb-4">Status</h2>
 
         <div className="space-y-4">
@@ -235,9 +240,10 @@ const PetitionDetail = () => {
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all"
+                  className="h-2 rounded-full transition-all"
                   style={{
                     width: `${(petition.current_approval_step / approvalSteps.length) * 100}%`,
+                    backgroundColor: '#C8102E'
                   }}
                 />
               </div>
@@ -247,7 +253,7 @@ const PetitionDetail = () => {
       </div>
 
       {/* Petition Details */}
-      <div className="bg-white shadow rounded-lg p-6 mb-6">
+      <div className="bg-white shadow-lg rounded-lg p-6 mb-6 border-2" style={{ borderColor: '#C8102E', backgroundColor: 'rgba(200, 16, 46, 0.02)' }}>
         <h2 className="text-lg font-semibold mb-4">Petition Details</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -311,35 +317,32 @@ const PetitionDetail = () => {
       </div>
 
       {/* Approval Steps */}
-      <div className="bg-white shadow rounded-lg p-6 mb-6">
+      <div className="bg-white shadow-lg rounded-lg p-6 mb-6 border-2" style={{ borderColor: '#C8102E', backgroundColor: 'rgba(200, 16, 46, 0.02)' }}>
         <h2 className="text-lg font-semibold mb-4">Approval Workflow</h2>
 
         <div className="space-y-4">
           {approvalSteps.map((step, index) => (
             <div
               key={step.id}
-              className={`border rounded-lg p-4 ${
-                step.status === 'approved'
-                  ? 'border-green-300 bg-green-50'
-                  : step.status === 'rejected'
-                  ? 'border-red-300 bg-red-50'
-                  : step.status === 'in_review'
-                  ? 'border-blue-300 bg-blue-50'
-                  : 'border-gray-300'
-              }`}
+              className="border-2 rounded-lg p-4"
+              style={{
+                borderColor: step.status === 'approved' ? '#10B981' :
+                            step.status === 'rejected' ? '#EF4444' :
+                            step.status === 'in_review' ? '#C8102E' : '#D1D5DB',
+                backgroundColor: step.status === 'approved' ? 'rgba(16, 185, 129, 0.05)' :
+                               step.status === 'rejected' ? 'rgba(239, 68, 68, 0.05)' :
+                               step.status === 'in_review' ? 'rgba(200, 16, 46, 0.05)' : 'white'
+              }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      step.status === 'approved'
-                        ? 'bg-green-600 text-white'
-                        : step.status === 'rejected'
-                        ? 'bg-red-600 text-white'
-                        : step.status === 'in_review'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-400 text-white'
-                    }`}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-white"
+                    style={{
+                      backgroundColor: step.status === 'approved' ? '#10B981' :
+                                     step.status === 'rejected' ? '#EF4444' :
+                                     step.status === 'in_review' ? '#C8102E' : '#9CA3AF'
+                    }}
                   >
                     {step.status === 'approved' ? (
                       <CheckCircle className="w-5 h-5" />
@@ -396,7 +399,8 @@ const PetitionDetail = () => {
           <div className="mt-6 flex gap-4">
             <button
               onClick={() => openApprovalModal('approve')}
-              className="flex-1 flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              className="flex-1 flex items-center justify-center px-4 py-2 text-white rounded-md hover:opacity-90"
+              style={{ backgroundColor: '#10B981' }}
             >
               <CheckCircle className="w-4 h-4 mr-2" />
               Approve
@@ -404,7 +408,8 @@ const PetitionDetail = () => {
 
             <button
               onClick={() => openApprovalModal('return')}
-              className="flex-1 flex items-center justify-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
+              className="flex-1 flex items-center justify-center px-4 py-2 text-white rounded-md hover:opacity-90"
+              style={{ backgroundColor: '#F59E0B' }}
             >
               <AlertTriangle className="w-4 h-4 mr-2" />
               Return for Changes
@@ -412,7 +417,8 @@ const PetitionDetail = () => {
 
             <button
               onClick={() => openApprovalModal('reject')}
-              className="flex-1 flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              className="flex-1 flex items-center justify-center px-4 py-2 text-white rounded-md hover:opacity-90"
+              style={{ backgroundColor: '#EF4444' }}
             >
               <XCircle className="w-4 h-4 mr-2" />
               Reject
@@ -424,7 +430,7 @@ const PetitionDetail = () => {
       {/* Approval Modal */}
       {showApprovalModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 border-2" style={{ borderColor: '#C8102E' }}>
             <h3 className="text-lg font-semibold mb-4">
               {approvalAction === 'approve'
                 ? 'Approve Petition'
@@ -441,7 +447,8 @@ const PetitionDetail = () => {
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border-2 rounded-md focus:outline-none focus:ring-2"
+                style={{ borderColor: '#C8102E' }}
                 placeholder={
                   approvalAction === 'approve'
                     ? 'Optional comments...'
@@ -454,20 +461,19 @@ const PetitionDetail = () => {
               <button
                 onClick={() => setShowApprovalModal(false)}
                 disabled={actionLoading}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className="flex-1 px-4 py-2 border-2 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                style={{ borderColor: '#C8102E', color: '#C8102E' }}
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleApprovalAction(approvalAction)}
                 disabled={actionLoading}
-                className={`flex-1 px-4 py-2 rounded-md text-white disabled:opacity-50 ${
-                  approvalAction === 'approve'
-                    ? 'bg-green-600 hover:bg-green-700'
-                    : approvalAction === 'reject'
-                    ? 'bg-red-600 hover:bg-red-700'
-                    : 'bg-orange-600 hover:bg-orange-700'
-                }`}
+                className="flex-1 px-4 py-2 rounded-md text-white disabled:opacity-50 hover:opacity-90"
+                style={{
+                  backgroundColor: approvalAction === 'approve' ? '#10B981' :
+                                 approvalAction === 'reject' ? '#EF4444' : '#F59E0B'
+                }}
               >
                 {actionLoading ? 'Processing...' : 'Confirm'}
               </button>
