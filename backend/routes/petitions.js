@@ -359,7 +359,11 @@ router.put('/:id', authenticateToken, async (req, res, next) => {
 
     const petition = petitionCheck.rows[0];
 
-    if (petition.user_id !== userId) {
+    // Allow petition owner or admin/manager to edit
+    const isOwner = petition.user_id === userId;
+    const isAdmin = ['admin', 'manager'].includes(req.user.role);
+
+    if (!isOwner && !isAdmin) {
       return res.status(403).json({
         success: false,
         error: 'Access denied',
@@ -556,7 +560,7 @@ router.delete('/:id', authenticateToken, async (req, res, next) => {
 
     const petition = petitionCheck.rows[0];
     const isOwner = petition.user_id === userId;
-    const isAdmin = userRole === 'admin';
+    const isAdmin = ['admin', 'manager'].includes(userRole);
 
     if (!isOwner && !isAdmin) {
       return res.status(403).json({
