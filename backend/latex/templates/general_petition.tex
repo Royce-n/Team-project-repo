@@ -7,6 +7,10 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{xcolor}
 \usepackage{ifthen}
+\usepackage{amssymb}
+
+% Define boxtimes command for checked boxes (checkmark overlaid on box)
+\newcommand{\boxtimes}{\rlap{$\checkmark$}$\square$}
 
 % Define custom colors
 \definecolor{uhred}{RGB}{200,16,46}
@@ -17,7 +21,7 @@
 \renewcommand{\headrulewidth}{0.5pt}
 \fancyhead[L]{\small GENERAL PETITION}
 \fancyhead[C]{\small University of Houston\\Registration and Academic Records\\(713) 743-1010}
-\fancyhead[R]{\includegraphics[height=0.6in]{uh_logo.png}}
+\fancyhead[R]{\textbf{\large UH}}
 
 % Footer
 \fancyfoot[C]{\small \thepage}
