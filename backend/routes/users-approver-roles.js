@@ -51,7 +51,7 @@ router.post(
   [
     body('roles').isArray().withMessage('Roles must be an array'),
     body('roles.*').isIn(['advisor', 'chairperson', 'dean', 'provost']).withMessage('Invalid approver role'),
-    body('department').optional().isString(),
+    body('department').optional({ nullable: true }).isString(),
   ],
   async (req, res, next) => {
     try {
