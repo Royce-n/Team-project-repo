@@ -92,7 +92,15 @@ router.get('/:petitionId/download', authenticateToken, async (req, res, next) =>
     }
 
     // Get PDF path
-    const pdfPath = await getPDFPath(petitionId, version);
+    let pdfPath;
+    try {
+      pdfPath = await getPDFPath(petitionId, version);
+    } catch (error) {
+      return res.status(404).json({
+        success: false,
+        error: 'PDF not found',
+      });
+    }
 
     // Check if file exists
     try {
@@ -166,7 +174,15 @@ router.get('/:petitionId/view', authenticateToken, async (req, res, next) => {
     }
 
     // Get PDF path
-    const pdfPath = await getPDFPath(petitionId, version);
+    let pdfPath;
+    try {
+      pdfPath = await getPDFPath(petitionId, version);
+    } catch (error) {
+      return res.status(404).json({
+        success: false,
+        error: 'PDF not found',
+      });
+    }
 
     // Check if file exists
     try {
