@@ -118,10 +118,15 @@ const NewPetition = () => {
     } catch (error) {
       console.error('Error saving petition:', error);
       console.error('Error details:', error.response?.data);
-      const errorMessage = error.response?.data?.error ||
-                          (error.response?.data?.details ?
-                            error.response.data.details.map(d => d.msg).join(', ') :
-                            'Failed to save petition');
+
+      // Prioritize showing detailed validation errors
+      let errorMessage = 'Failed to save petition';
+      if (error.response?.data?.details && error.response.data.details.length > 0) {
+        errorMessage = error.response.data.details.map(d => `${d.path}: ${d.msg}`).join(', ');
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      }
+
       toast.error(errorMessage);
     } finally {
       setSaving(false);
