@@ -6,12 +6,20 @@ import { userAPI } from '../services/api';
 import { ArrowLeft, Save } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
+import api from '../services/api';
 
 const UserForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const isEdit = !!id;
+  const [approverRoles, setApproverRoles] = useState({
+    advisor: false,
+    chairperson: false,
+    dean: false,
+    provost: false
+  });
+  const [approverDepartment, setApproverDepartment] = useState('');
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm({
     defaultValues: {
@@ -36,6 +44,26 @@ const UserForm = () => {
       }
     }
   );
+
+  // Fetch approver assignments for this user
+  useEffect(() => {
+    if (isEdit && id) {
+      api.get(`/users/${id}/approver-roles`).then(response => {
+        if (response.data.success && response.data.data.length > 0) {
+          const roles = {};
+          response.data.data.forEach(assignment => {
+            roles[assignment.approver_role] = true;
+            if (assignment.department) {
+              setApproverDepartment(assignment.department);
+            }
+          });
+          setApproverRoles(roles);
+        }
+      }).catch(error => {
+        console.error('Error fetching approver roles:', error);
+      });
+    }
+  }, [isEdit, id]);
 
   const createMutation = useMutation(userAPI.createUser, {
     onSuccess: () => {
@@ -63,11 +91,28 @@ const UserForm = () => {
     }
   );
 
-  const onSubmit = (data) => {
-    if (isEdit) {
-      updateMutation.mutate({ id, data });
-    } else {
-      createMutation.mutate(data);
+  const onSubmit = async (data) => {
+    try {
+      // Save user data first
+      if (isEdit) {
+        await updateMutation.mutateAsync({ id, data });
+      } else {
+        const result = await createMutation.mutateAsync(data);
+        // If creating, we don't have an ID yet for approver roles
+        // Navigate will happen in mutation success callback
+        return;
+      }
+
+      // Save approver role assignments
+      const selectedRoles = Object.keys(approverRoles).filter(role => approverRoles[role]);
+      if (selectedRoles.length > 0 && isEdit) {
+        await api.post(`/users/${id}/approver-roles`, {
+          roles: selectedRoles,
+          department: approverDepartment || null
+        });
+      }
+    } catch (error) {
+      console.error('Error saving user:', error);
     }
   };
 
@@ -180,6 +225,98 @@ const UserForm = () => {
               )}
             </div>
           </div>
+
+          {/* Approver Role Assignments */}
+          {isEdit && (
+            <div className="pt-6 border-t border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Approver Role Assignments</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Assign approver roles to allow this user to approve petitions. Multiple roles can be assigned.
+              </p>
+
+              <div className="space-y-4">
+                {/* Department */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Department (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={approverDepartment}
+                    onChange={(e) => setApproverDepartment(e.target.value)}
+                    className="input mt-1"
+                    placeholder="e.g., Computer Science"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Specify a department if this user approves for a specific department
+                  </p>
+                </div>
+
+                {/* Approver Role Checkboxes */}
+                <div className="grid grid-cols-2 gap-4">
+                  <label className="flex items-center space-x-3 p-3 border-2 rounded-md cursor-pointer hover:bg-gray-50"
+                         style={{ borderColor: approverRoles.advisor ? '#C8102E' : '#E5E7EB' }}>
+                    <input
+                      type="checkbox"
+                      checked={approverRoles.advisor}
+                      onChange={(e) => setApproverRoles({...approverRoles, advisor: e.target.checked})}
+                      className="h-4 w-4"
+                      style={{ accentColor: '#C8102E' }}
+                    />
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">Advisor/Instructor</div>
+                      <div className="text-xs text-gray-500">First step approver</div>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center space-x-3 p-3 border-2 rounded-md cursor-pointer hover:bg-gray-50"
+                         style={{ borderColor: approverRoles.chairperson ? '#C8102E' : '#E5E7EB' }}>
+                    <input
+                      type="checkbox"
+                      checked={approverRoles.chairperson}
+                      onChange={(e) => setApproverRoles({...approverRoles, chairperson: e.target.checked})}
+                      className="h-4 w-4"
+                      style={{ accentColor: '#C8102E' }}
+                    />
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">Chairperson</div>
+                      <div className="text-xs text-gray-500">Department chair</div>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center space-x-3 p-3 border-2 rounded-md cursor-pointer hover:bg-gray-50"
+                         style={{ borderColor: approverRoles.dean ? '#C8102E' : '#E5E7EB' }}>
+                    <input
+                      type="checkbox"
+                      checked={approverRoles.dean}
+                      onChange={(e) => setApproverRoles({...approverRoles, dean: e.target.checked})}
+                      className="h-4 w-4"
+                      style={{ accentColor: '#C8102E' }}
+                    />
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">College Dean</div>
+                      <div className="text-xs text-gray-500">College-level approval</div>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center space-x-3 p-3 border-2 rounded-md cursor-pointer hover:bg-gray-50"
+                         style={{ borderColor: approverRoles.provost ? '#C8102E' : '#E5E7EB' }}>
+                    <input
+                      type="checkbox"
+                      checked={approverRoles.provost}
+                      onChange={(e) => setApproverRoles({...approverRoles, provost: e.target.checked})}
+                      className="h-4 w-4"
+                      style={{ accentColor: '#C8102E' }}
+                    />
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">Sr. Vice President/Provost</div>
+                      <div className="text-xs text-gray-500">Final approval authority</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Form Actions */}
           <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">

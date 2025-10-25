@@ -178,10 +178,10 @@ const PetitionDetail = () => {
           Back to Petitions
         </button>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <img src="/uh_logo.png" alt="University of Houston" className="h-16 w-auto" />
-            <div>
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-4">
+            <img src="/uh_logo.png" alt="University of Houston" className="h-16 w-auto flex-shrink-0" />
+            <div className="flex-1">
               <h1 className="text-2xl font-bold text-gray-900">
                 {petition.request_number}
               </h1>

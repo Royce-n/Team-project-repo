@@ -13,6 +13,7 @@ const signatureRoutes = require('./routes/signatures');
 const petitionRoutes = require('./routes/petitions');
 const approvalRoutes = require('./routes/approvals');
 const pdfRoutes = require('./routes/pdfs');
+const usersApproverRolesRoutes = require('./routes/users-approver-roles');
 const { connectDB } = require('./config/database');
 const { errorHandler } = require('./middleware/errorHandler');
 const { authenticateToken } = require('./middleware/auth');
@@ -77,6 +78,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', authenticateToken, usersApproverRolesRoutes);
 app.use('/api/users', authenticateToken, userRoutes);
 app.use('/api/roles', authenticateToken, roleRoutes);
 app.use('/api/signatures', authenticateToken, signatureRoutes);
