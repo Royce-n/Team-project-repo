@@ -117,9 +117,12 @@ const NewPetition = () => {
       }
     } catch (error) {
       console.error('Error saving petition:', error);
-      toast.error(
-        error.response?.data?.error || 'Failed to save petition'
-      );
+      console.error('Error details:', error.response?.data);
+      const errorMessage = error.response?.data?.error ||
+                          (error.response?.data?.details ?
+                            error.response.data.details.map(d => d.msg).join(', ') :
+                            'Failed to save petition');
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }

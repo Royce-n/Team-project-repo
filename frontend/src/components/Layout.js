@@ -65,11 +65,12 @@ const Layout = ({ children }) => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`${
+                    className={`group flex items-center px-2 py-2 text-base font-medium rounded-md ${
                       isActive
-                        ? 'bg-primary-100 text-primary-900'
+                        ? 'text-white'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
+                    }`}
+                    style={isActive ? { backgroundColor: '#C8102E' } : {}}
                   >
                     <item.icon className="mr-4 h-6 w-6" />
                     {item.name}
@@ -95,11 +96,12 @@ const Layout = ({ children }) => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`${
+                    className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                       isActive
-                        ? 'bg-primary-100 text-primary-900'
+                        ? 'text-white'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
+                    }`}
+                    style={isActive ? { backgroundColor: '#C8102E' } : {}}
                   >
                     <item.icon className="mr-3 h-6 w-6" />
                     {item.name}
@@ -165,11 +167,8 @@ const Layout = ({ children }) => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`${
-                  isActive
-                    ? 'text-primary-600'
-                    : 'text-gray-400'
-                } flex flex-col items-center py-2 px-3`}
+                className="flex flex-col items-center py-2 px-3"
+                style={{ color: isActive ? '#C8102E' : '#9CA3AF' }}
               >
                 <item.icon className="h-6 w-6" />
                 <span className="text-xs mt-1">{item.name}</span>
