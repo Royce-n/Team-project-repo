@@ -94,6 +94,7 @@ const SignatureUpload = ({ onSignatureUploaded, existingSignature }) => {
   const uploadSignature = async (imageData, imageFormat) => {
     setUploading(true);
     try {
+      // Upload signature
       const response = await api.post('/signatures/upload', {
         imageData,
         imageFormat,
@@ -117,6 +118,29 @@ const SignatureUpload = ({ onSignatureUploaded, existingSignature }) => {
     }
   };
 
+  // normalize a data URL or object to { base64, format }
+  // Acceptable inputs:
+  //  - "data:image/png;base64,...."
+  //  - { dataUrl: "data:image/png;base64,..." }  (in case your SignatureCanvas returns an object)
+  const normalizeDataUrl = (dataUrlOrObj) => {
+    const dataUrl = typeof dataUrlOrObj === 'string'
+      ? dataUrlOrObj
+      : dataUrlOrObj?.dataUrl || dataUrlOrObj?.imageDataUrl || dataUrlOrObj?.imageData || null;
+
+    if (!dataUrl) return null;
+
+    // match png, jpeg, jpg, svg+xml
+    const matches = dataUrl.match(/^data:image\/(png|jpeg|jpg|svg\+xml);base64,(.*)$/);
+    if (!matches) {
+      // Not a base64 image data URL we recognized.
+      return null;
+    }
+
+    let format = matches[1];
+    if (format === 'jpeg') format = 'jpg';
+    const base64 = matches[2];
+    return { base64, format };
+  };
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete your signature?')) {
       return;
@@ -135,6 +159,38 @@ const SignatureUpload = ({ onSignatureUploaded, existingSignature }) => {
       toast.error(
         error.response?.data?.error || 'Failed to delete signature'
       );
+    }
+  };
+
+  const handleCanvasSave = async (dataUrl) => {
+    if (!dataUrl) {
+      toast.error('No signature data received');
+      return;
+    }
+
+    console.log('Received data URL:', dataUrl.substring(0, 100) + '...');
+    
+    // Make sure we have a proper data URL
+    if (!dataUrl.startsWith('data:image/png;base64,')) {
+      toast.error('Invalid signature format');
+      return;
+    }
+
+    // Set preview immediately for better UX
+    setPreview(dataUrl);
+    
+    try {
+      // Extract base64 data without the data URL prefix
+      const base64Data = dataUrl.split(',')[1];
+      console.log('Extracted base64:', base64Data.substring(0, 100) + '...');
+      
+      // Upload using the same format as file upload
+      await uploadSignature(base64Data, 'png');
+      setShowCanvas(false);
+    } catch (error) {
+      console.error('Save error details:', error.response?.data);
+      setPreview(null);
+      toast.error(error.response?.data?.error || 'Failed to save signature');
     }
   };
 
@@ -200,10 +256,7 @@ const SignatureUpload = ({ onSignatureUploaded, existingSignature }) => {
           </div>
         ) : showCanvas ? (
           <SignatureCanvas
-            onSave={(data) => {
-              uploadSignature(data.imageData, data.imageFormat);
-              setShowCanvas(false);
-            }}
+            onSave={handleCanvasSave}
             onCancel={() => setShowCanvas(false)}
           />
         ) : (
