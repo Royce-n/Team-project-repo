@@ -197,6 +197,29 @@ async function generatePetitionPDF(petitionId) {
     replacements.TO_MAJOR = escapeLatex(petitionData.toMajor || '');
   }
 
+  // Fetch and process student signature
+  const studentSignatureResult = await query(
+    `SELECT image_data, image_format
+     FROM signature_images
+     WHERE user_id = $1 AND is_active = TRUE
+     LIMIT 1`,
+    [petition.user_id]
+  );
+
+  if (studentSignatureResult.rows.length > 0) {
+    const studentSig = studentSignatureResult.rows[0];
+    const studentSignaturePath = await saveSignatureImage(
+      studentSig.image_data,
+      studentSig.image_format,
+      `${petitionId}_student`
+    );
+    replacements.HAS_STUDENT_SIGNATURE = 'true';
+    replacements.STUDENT_SIGNATURE_PATH = studentSignaturePath;
+  } else {
+    replacements.HAS_STUDENT_SIGNATURE = 'false';
+    replacements.STUDENT_SIGNATURE_PATH = '';
+  }
+
   // Split explanation into lines
   const explanationLines = splitIntoLines(petition.explanation, 100, 3);
   replacements.EXPLANATION_LINE_1 = escapeLatex(explanationLines[0]);

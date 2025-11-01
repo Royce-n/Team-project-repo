@@ -174,7 +174,12 @@
 
 % Student Signature
 \noindent
-\textbf{Signature of Student} \underline{\hspace{3in}} \textbf{Date} \underline{{{SUBMISSION_DATE}}\hspace{1in}}
+\textbf{Signature of Student} 
+\ifthenelse{\equal{{{HAS_STUDENT_SIGNATURE}}}{true}}{%
+  \raisebox{-0.3in}{\includegraphics[height=0.5in,keepaspectratio]{{{STUDENT_SIGNATURE_PATH}}}}%
+}{%
+  \underline{\hspace{3in}}%
+} \textbf{Date} \underline{{{SUBMISSION_DATE}}\hspace{1in}}
 
 \vspace{0.15in}
 
