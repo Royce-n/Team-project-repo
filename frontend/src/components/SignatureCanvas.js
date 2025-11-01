@@ -35,10 +35,31 @@ const SignatureCanvas = ({ onSave, onCancel }) => {
         className="border border-gray-300 rounded"
       />
       <div className="flex gap-4 mt-4">
-        <button onClick={onCancel}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            clear();
+          }}
+        >
+          <RotateCcw className="w-6 h-6" />
+        </button>  
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            onCancel();
+          }}
+        >
           <X className="w-6 h-6" />
         </button>
-        <button onClick={save}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            save();
+          }}
+        >
           <Check className="w-6 h-6" />
         </button>
       </div>
