@@ -177,7 +177,6 @@ See [APPROVAL_SYSTEM.md](./APPROVAL_SYSTEM.md) for detailed documentation.
 
 - **Josh Gulizia** - Full-stack development, deployment, and DevOps
 - **Royce Nguyen** - Documentation & Deliverables
-- **Alan Escamilla** - [Role/Contributions]
 - **Phuong Ho** - [Role/Contributions]
 
 ## Documentation
