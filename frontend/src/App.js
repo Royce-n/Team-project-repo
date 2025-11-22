@@ -14,6 +14,7 @@ import NewPetition from './pages/NewPetition';
 import EditPetition from './pages/EditPetition';
 import PetitionDetail from './pages/PetitionDetail';
 import ApprovalQueue from './pages/ApprovalQueue';
+import ExternalForms from './pages/ExternalForms';
 import LoadingSpinner from './components/LoadingSpinner';
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
         <Route path="/petitions/:id/edit" element={<EditPetition />} />
         <Route path="/petitions/:id" element={<PetitionDetail />} />
         <Route path="/approvals" element={<ApprovalQueue />} />
+        <Route path="/external-forms" element={<ExternalForms />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Layout>

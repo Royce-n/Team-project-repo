@@ -14,6 +14,8 @@ const petitionRoutes = require('./routes/petitions');
 const approvalRoutes = require('./routes/approvals');
 const pdfRoutes = require('./routes/pdfs');
 const usersApproverRolesRoutes = require('./routes/users-approver-roles');
+const externalFormsRoutes = require('./routes/externalForms');
+const publicFormsRoutes = require('./routes/publicForms');
 const { connectDB } = require('./config/database');
 const { errorHandler } = require('./middleware/errorHandler');
 const { authenticateToken } = require('./middleware/auth');
@@ -69,14 +71,17 @@ app.use(morgan('combined'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
+  res.status(200).json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
 });
 
-// API routes
+// Public API routes (no authentication required)
+app.use('/approvals', publicFormsRoutes);
+
+// Protected API routes (authentication required)
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authenticateToken, usersApproverRolesRoutes);
 app.use('/api/users', authenticateToken, userRoutes);
@@ -85,6 +90,7 @@ app.use('/api/signatures', authenticateToken, signatureRoutes);
 app.use('/api/petitions', authenticateToken, petitionRoutes);
 app.use('/api/approvals', authenticateToken, approvalRoutes);
 app.use('/api/pdfs', authenticateToken, pdfRoutes);
+app.use('/api/external-forms', authenticateToken, externalFormsRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

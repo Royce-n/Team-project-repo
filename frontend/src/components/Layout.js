@@ -11,7 +11,8 @@ import {
   Home,
   Settings,
   FileText,
-  Inbox
+  Inbox,
+  ExternalLink
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
@@ -22,6 +23,7 @@ const Layout = ({ children }) => {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'My Petitions', href: '/petitions', icon: FileText },
+    { name: 'External Forms', href: '/external-forms', icon: ExternalLink },
     { name: 'Approval Queue', href: '/approvals', icon: Inbox, roles: ['admin', 'manager', 'advisor', 'chairperson', 'dean', 'provost'] },
     { name: 'Users', href: '/users', icon: Users, roles: ['admin', 'manager'] },
     { name: 'Roles', href: '/roles', icon: Shield, roles: ['admin'] },
