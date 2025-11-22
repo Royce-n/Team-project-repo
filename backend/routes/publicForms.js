@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/database').pool;
+const { getPool } = require('../config/database');
 
 /**
  * GET /approvals/get-forms
@@ -9,6 +9,7 @@ const pool = require('../config/database').pool;
  */
 router.get('/get-forms', async (req, res) => {
   try {
+    const pool = getPool();
     // Fetch all petition types from the database
     const result = await pool.query(
       `SELECT
