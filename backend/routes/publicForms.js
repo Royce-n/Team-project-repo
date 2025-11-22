@@ -13,19 +13,17 @@ router.get('/get-forms', async (req, res) => {
     // Fetch all petition types from the database
     const result = await pool.query(
       `SELECT
-        petition_type_id,
+        id,
         type_name,
-        description,
-        is_active
+        description
       FROM petition_types
-      WHERE is_active = true
       ORDER BY type_name ASC`
     );
 
     // Transform the data to match the external API format
     const forms = result.rows.map(petition => ({
-      form_code: `petition_type_${petition.petition_type_id}`,
-      link: `https://aurora.jguliz.com/petitions/new?type=${petition.petition_type_id}`,
+      form_code: `petition_type_${petition.id}`,
+      link: `https://aurora.jguliz.com/petitions/new?type=${petition.id}`,
       name: petition.type_name,
       description: petition.description
     }));
