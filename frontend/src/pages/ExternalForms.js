@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from 'react-query';
 import { api } from '../services/api';
-import { ExternalLink, FileText, Loader } from 'lucide-react';
+import { ExternalLink, FileText } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { toast } from 'react-hot-toast';
 
@@ -74,7 +74,7 @@ const ExternalForms = () => {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">External Forms</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Access forms from our integrated partner system at {data?.source}
+          Access forms from our integrated partner system
         </p>
       </div>
 
@@ -95,13 +95,9 @@ const ExternalForms = () => {
                 </div>
               </div>
 
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 {form.name}
               </h3>
-
-              <p className="text-sm text-gray-500 mb-4">
-                Form Code: <span className="font-mono text-gray-700">{form.form_code}</span>
-              </p>
 
               <button
                 onClick={() => handleFormRedirect(form.link, form.name)}
@@ -124,26 +120,6 @@ const ExternalForms = () => {
         ))}
       </div>
 
-      {/* Info Section */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800">
-              About External Forms
-            </h3>
-            <p className="mt-2 text-sm text-blue-700">
-              These forms are hosted by our partner team at arlington.rindeer.com.
-              When you click "Open Form", you'll be redirected to their system to complete the form.
-              Your session will be maintained, and you can return here at any time.
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Empty State */}
       {forms.length === 0 && (
